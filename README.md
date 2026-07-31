@@ -107,12 +107,17 @@ npm install
 npm run watch        # esbuild in watch mode
 # then press F5 to launch the Extension Development Host
 
+npm run verify       # everything CI runs, in the same order — use this before pushing
+
 npm run check-types  # tsc --noEmit
 npm run lint
 npm test             # unit tests (no VS Code host needed)
 npm run test:integration
 npm run package      # → commitizen-panel-0.1.0.vsix
 ```
+
+Run `npm run verify` rather than the individual steps before pushing. Running them piecemeal is how
+a lint error reached CI once: the final edit landed after lint had already been run by hand.
 
 `format.ts`, `branch.ts` and `config.ts` are deliberately free of any `vscode` runtime import so
 they can be tested under plain mocha. Anything touching the editor lives elsewhere.

@@ -2,15 +2,20 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import type { CommitizenApi } from '../../extension';
 
-// Derived from the manifest rather than hardcoded: the publisher is a placeholder
-// until release, and a literal here would break the whole suite the moment it changes.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const manifest = require('../../../package.json') as { publisher: string; name: string };
-const EXTENSION_ID = `${manifest.publisher}.${manifest.name}`;
+const EXTENSION_NAME = 'commitizen-panel';
 
+/**
+ * Looks the extension up by name rather than by `publisher.name`.
+ *
+ * The publisher is a placeholder until release, so a hardcoded full ID would
+ * break the entire suite the moment it is set for real — which is exactly what
+ * happened once already.
+ */
 async function getApi(): Promise<CommitizenApi> {
-	const extension = vscode.extensions.getExtension<CommitizenApi>(EXTENSION_ID);
-	assert.ok(extension, `extension ${EXTENSION_ID} is not installed in the test host`);
+	const extension = vscode.extensions.all.find(
+		(candidate) => candidate.packageJSON?.name === EXTENSION_NAME,
+	) as vscode.Extension<CommitizenApi> | undefined;
+	assert.ok(extension, `no extension named "${EXTENSION_NAME}" is loaded in the test host`);
 
 	const api = extension.isActive ? extension.exports : await extension.activate();
 	// A failed activation surfaces here as undefined exports with isActive true;
