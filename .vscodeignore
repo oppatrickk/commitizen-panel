@@ -1,0 +1,16 @@
+.vscode/**
+.vscode-test/**
+.vscode-test.mjs
+.github/**
+out-test/**
+src/**
+node_modules/**
+.gitignore
+.eslintrc.json
+esbuild.js
+tsconfig.json
+tsconfig.test.json
+# Source for media/icon.png; only the rendered PNG needs to ship.
+media/icon.svg
+**/*.map
+**/*.ts

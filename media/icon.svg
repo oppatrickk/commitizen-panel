@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 128 128">
+  <!--
+    Marketplace icon: a commit node on a branch line, with a check to the right.
+    Kept to two shapes and one accent colour so it stays legible at 32px in the
+    Extensions list as well as at full size on the Marketplace page.
+  -->
+  <rect width="128" height="128" rx="26" fill="#1F2430"/>
+
+  <!-- The commit line, with the node sitting on it. -->
+  <path d="M46 20 V46" stroke="#5B7FFF" stroke-width="9" stroke-linecap="round"/>
+  <path d="M46 82 V108" stroke="#5B7FFF" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="46" cy="64" r="17" fill="none" stroke="#5B7FFF" stroke-width="9"/>
+
+  <!-- Composed-and-ready check. -->
+  <path d="M70 70 L84 84 L110 50" fill="none" stroke="#4ED8A0" stroke-width="10"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

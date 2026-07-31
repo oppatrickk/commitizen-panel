@@ -1,0 +1,76 @@
+name: Release
+
+# Publishing is deliberately gated on pushing a version tag, so no commit to main
+# can ship to the Marketplace on its own.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and attach the VSIX without publishing
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type check
+        run: npm run check-types
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Integration tests
+        run: xvfb-run -a npm run test:integration
+
+      - name: Check the tag matches package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "Tag v$tag does not match package.json version $pkg" >&2
+            exit 1
+          fi
+
+      - name: Refuse to publish with the placeholder publisher
+        run: |
+          publisher="$(node -p "require('./package.json').publisher")"
+          if [ "$publisher" = "your-publisher-id" ]; then
+            echo "package.json still has the placeholder publisher. Set a Marketplace publisher you own first." >&2
+            exit 1
+          fi
+
+      - name: Package
+        run: npx vsce package --out commitizen-panel.vsix
+
+      - name: Attach the VSIX to the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: commitizen-panel.vsix
+          generate_release_notes: true
+
+      - name: Publish to the Marketplace
+        if: startsWith(github.ref, 'refs/tags/v') && inputs.dry_run != true
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npx vsce publish --packagePath commitizen-panel.vsix
