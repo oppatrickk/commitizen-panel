@@ -4,6 +4,7 @@
 .github/**
 out-test/**
 src/**
+scripts/**
 node_modules/**
 .gitignore
 .eslintrc.json
