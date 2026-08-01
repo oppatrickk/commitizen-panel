@@ -67,7 +67,7 @@ export function buildScopeItems(composer: Composer): ScopeItem[] {
 		items.push(item);
 	};
 
-	const branchScopes = composer.branchScopes();
+	const branchScopes = composer.branchScopeSuggestions();
 	if (branchScopes.length > 0) {
 		items.push({ label: 'From branch', kind: vscode.QuickPickItemKind.Separator });
 		for (const scope of branchScopes) {

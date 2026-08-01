@@ -15,10 +15,17 @@ editable, with a live preview of exactly what will be committed.
 **Type grid.** Every commit type as a card, with an icon and a one-line description. The last card
 is a text field — type your own if the list doesn't cover it.
 
-**Branch-aware scope.** On `feature/PROJ-123-add-login` the panel suggests `PROJ-123`, pre-selected.
-Switch branches and the suggestion follows; pick a scope yourself and it stays put. Suggestion chips
-are drawn from the branch, your repository config, and scopes you have committed with before. Typing
-in the field never adds a suggestion — only an actual commit does. *Conventional Commit: Clear Recent
+**Branch-aware scope.** On `feature/PROJ-123-add-login` the panel fills in `PROJ-123` for you. Switch
+branches and it follows; pick a scope yourself and it stays put.
+
+The current branch is *always* offered as a chip, whatever it is. What
+`conventionalCommitPanel.scope.ignoreBranches` controls is only whether it gets filled in
+automatically — on `main` or `develop` the branch name isn't an area of the codebase, and
+`feat(main): …` would be noise that lives in your history forever. So it's one click away rather
+than pre-filled. Set that list to `[]` if you'd rather it always fill in.
+
+Chips also come from your repository config and from scopes you have committed with before. Typing in
+the field never adds a suggestion — only an actual commit does. *Conventional Commit: Clear Recent
 Scope Suggestions* empties the list.
 
 **Live validation.** A character counter and fill meter against the header limit, with the specific
@@ -33,7 +40,8 @@ the resulting release impact — `patch`, `minor` or `major`.
 
 **Reads your existing config.** Types and scopes come from `.cz-config.js`, `.czrc`,
 `package.json#config.commitizen` or a commitlint config, falling back to the standard Conventional
-Commits list when there's nothing to read.
+Commits list when there's nothing to read. It parses those files directly — nothing needs to be
+installed, and it doesn't shell out to the commitizen or commitlint CLIs.
 
 **Guided wizard.** Prefer a linear flow? The toolbar button walks the same fields step by step, with
 a back button. It shares one draft with the panel, so you can switch between them freely.
@@ -71,10 +79,6 @@ are parsed, never executed, and always read.
 
 **No duplicate file list.** VS Code's own `Changes` section sits directly below the panel and already
 does that job well.
-
-**Not affiliated with [Commitizen](https://github.com/commitizen/cz-cli).** This extension implements
-the Conventional Commits spec directly; it reads commitizen-style config files for compatibility but
-does not run the commitizen CLI.
 
 ## Contributing
 

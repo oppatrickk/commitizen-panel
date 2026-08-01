@@ -232,6 +232,34 @@ suite('Conventional Commit Panel', () => {
 			}
 		});
 
+		test('an ignored branch is still offered as a chip, just never auto-filled', async function () {
+			const branch = api.git.branchName;
+			if (!branch) {
+				this.skip();
+			}
+
+			const configuration = vscode.workspace.getConfiguration('conventionalCommitPanel');
+			const previous = configuration.get<string[]>('scope.ignoreBranches');
+
+			await configuration.update('scope.ignoreBranches', [branch], vscode.ConfigurationTarget.Global);
+			try {
+				api.composer.reset();
+				await api.composer.refresh();
+
+				// Auto-fill and offering are separate concerns: an ignored branch must
+				// not land in a commit on its own, but it should still be one click away.
+				assert.deepStrictEqual(api.composer.branchScopes(), [], 'an ignored branch was auto-filled');
+				assert.strictEqual(api.composer.draft.scope, undefined);
+				assert.strictEqual(
+					api.composer.branchScopeSuggestions().includes(branch as string),
+					true,
+					'an ignored branch should still be offered as a suggestion',
+				);
+			} finally {
+				await configuration.update('scope.ignoreBranches', previous, vscode.ConfigurationTarget.Global);
+			}
+		});
+
 		test('typing a scope does not add it to the suggestions', async () => {
 			api.drafts.clearRecentScopes();
 

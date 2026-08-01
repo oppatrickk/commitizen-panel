@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { BUILT_IN_CONFIG, CommitConfig } from './config';
 import { ConfigService } from './configLoader';
-import { branchScopeCandidates, BranchScopeOptions } from './branch';
+import { branchScopeCandidates, BranchScopeOptions, DEFAULT_BRANCH_SCOPE_OPTIONS } from './branch';
 import {
 	DraftProblem,
 	FormatOptions,
@@ -292,16 +292,55 @@ export class Composer implements vscode.Disposable {
 		this.onDidChangeEmitter.fire();
 	}
 
-	/** Scope candidates derived from the current branch name. */
+	/**
+	 * Scope candidates used to pre-fill the field, honouring `ignoreBranches`.
+	 *
+	 * The ignore list exists because a long-lived branch name is not a scope:
+	 * `feat(main): …` says nothing about which area changed, and once committed it
+	 * is in the history for good.
+	 */
 	branchScopes(): string[] {
 		return branchScopeCandidates(this.git.branchName, this.branchScopeOptions());
 	}
 
+	/**
+	 * Scope candidates offered as chips, which is every branch including the
+	 * ignored ones.
+	 *
+	 * Auto-filling and offering are different things, and conflating them meant
+	 * that on `main` the branch was not merely un-filled, it was unreachable. Now
+	 * it is always one click away — it just never lands in a commit by itself.
+	 */
+	branchScopeSuggestions(): string[] {
+		return branchScopeCandidates(this.git.branchName, {
+			...this.branchScopeOptions(),
+			ignoreBranches: [],
+		});
+	}
+
+	/**
+	 * Falls back to the real defaults, not to empty lists.
+	 *
+	 * `[]` fails open: an empty ignore list means "suggest a scope on every
+	 * branch", so if a setting ever failed to resolve — a stale install whose
+	 * manifest declares different keys than the code asks for, say — the panel
+	 * would start suggesting `main`. An empty list is a meaningful user choice and
+	 * should not double as "value missing".
+	 */
 	private branchScopeOptions(): BranchScopeOptions {
 		return {
-			ticketPattern: this.configService.setting<string>('scope.ticketPattern', '([A-Z][A-Z0-9]+-\\d+)'),
-			branchPrefixes: this.configService.setting<string[]>('scope.branchPrefixes', []),
-			ignoreBranches: this.configService.setting<string[]>('scope.ignoreBranches', []),
+			ticketPattern: this.configService.setting<string>(
+				'scope.ticketPattern',
+				DEFAULT_BRANCH_SCOPE_OPTIONS.ticketPattern,
+			),
+			branchPrefixes: this.configService.setting<string[]>(
+				'scope.branchPrefixes',
+				DEFAULT_BRANCH_SCOPE_OPTIONS.branchPrefixes,
+			),
+			ignoreBranches: this.configService.setting<string[]>(
+				'scope.ignoreBranches',
+				DEFAULT_BRANCH_SCOPE_OPTIONS.ignoreBranches,
+			),
 		};
 	}
 

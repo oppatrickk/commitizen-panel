@@ -56,7 +56,7 @@ type InboundMessage =
 	| { type: 'reset' };
 
 /**
- * The `COMMITIZEN` section in the Source Control view.
+ * The `CONVENTIONAL COMMIT` section in the Source Control view.
  *
  * A webview rather than a TreeView: the design needs a type grid, inline text
  * fields, a live preview and a Commit button, none of which a TreeItem can render.
@@ -322,7 +322,7 @@ export class ComposerViewProvider implements vscode.WebviewViewProvider, vscode.
 			chips.push({ value, source });
 		};
 
-		for (const scope of this.composer.branchScopes()) {
+		for (const scope of this.composer.branchScopeSuggestions()) {
 			add(scope, 'branch');
 		}
 		for (const scope of this.composer.currentConfig.scopes) {

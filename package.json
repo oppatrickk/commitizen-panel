@@ -239,7 +239,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Branches that should not produce a scope suggestion."
+          "description": "Branches whose name is not filled into the scope automatically. They are still offered as a suggestion chip — this only stops a long-lived branch name like main landing in a commit by itself."
         },
         "conventionalCommitPanel.config.allowJsConfig": {
           "type": "boolean",
