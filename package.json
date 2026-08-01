@@ -264,6 +264,7 @@
     "pretest:unit": "npm run copy-assets && tsc -p tsconfig.test.json",
     "test:unit": "mocha \"out-test/test/unit/**/*.test.js\"",
     "test": "npm run test:unit",
+    "pretest:integration": "npm run compile && tsc -p tsconfig.test.json",
     "test:integration": "vscode-test",
     "verify": "npm run check-types && npm run lint && npm test && npm run compile && npm run test:integration && npm run package",
     "package": "vsce package"
