@@ -90,8 +90,34 @@ jobs:
           files: conventional-commit-panel.vsix
           generate_release_notes: true
 
+      # Publishing is skipped rather than failed in the two cases where it cannot
+      # succeed: no token configured, and a version already on the Marketplace
+      # (which rejects a duplicate). Tagging a version that was uploaded by hand
+      # should still produce a clean GitHub release. Both cases are logged — a
+      # silent skip would look identical to a successful publish.
+      - name: Decide whether to publish
+        id: gate
+        env:
+          HAS_PAT: ${{ secrets.VSCE_PAT != '' }}
+        run: |
+          id="$(node -p "const p = require('./package.json'); p.publisher + '.' + p.name")"
+          version="$(node -p "require('./package.json').version")"
+          live="$(npx vsce show "$id" --json 2>/dev/null \
+            | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(JSON.parse(s).versions[0].version)}catch{}})" \
+            || true)"
+
+          if [ "$HAS_PAT" != "true" ]; then
+            echo "::notice::No VSCE_PAT secret is set — building the release without publishing."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          elif [ "$live" = "$version" ]; then
+            echo "::notice::Version $version is already on the Marketplace — skipping publish."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish to the Marketplace
-        if: startsWith(github.ref, 'refs/tags/v') && inputs.dry_run != true
+        if: startsWith(github.ref, 'refs/tags/v') && inputs.dry_run != true && steps.gate.outputs.publish == 'true'
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: npx vsce publish --packagePath conventional-commit-panel.vsix
