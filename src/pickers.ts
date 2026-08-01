@@ -125,17 +125,12 @@ export async function applyScopeChoice(composer: Composer, picked: ScopeItem): P
 			return;
 		}
 
-		const trimmed = custom.trim();
-		composer.update({ scope: trimmed, scopeSource: 'custom' });
-		if (trimmed) {
-			composer.rememberScope(trimmed);
-		}
+		composer.update({ scope: custom.trim(), scopeSource: 'custom' });
 		return;
 	}
 
 	if (picked.value !== undefined) {
 		composer.update({ scope: picked.value, scopeSource: picked.source ?? 'custom' });
-		composer.rememberScope(picked.value);
 	}
 }
 

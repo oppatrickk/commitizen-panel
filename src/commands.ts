@@ -29,6 +29,10 @@ export function registerCommands(
 		vscode.commands.registerCommand('conventionalCommitPanel.apply', () => composer.applyToInputBox()),
 		vscode.commands.registerCommand('conventionalCommitPanel.reset', () => composer.reset()),
 		vscode.commands.registerCommand('conventionalCommitPanel.commit', () => composer.commit()),
+		vscode.commands.registerCommand('conventionalCommitPanel.clearRecentScopes', () => {
+			composer.clearRecentScopes();
+			void vscode.window.setStatusBarMessage('Recent scope suggestions cleared', 2000);
+		}),
 		vscode.commands.registerCommand('conventionalCommitPanel.openSettings', () =>
 			// Derived rather than hardcoded: the publisher is a placeholder until
 			// release, and a stale literal here would silently open an empty

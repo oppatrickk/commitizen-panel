@@ -242,12 +242,21 @@ export class Composer implements vscode.Disposable {
 			return false;
 		}
 
+		// Captured before the draft is cleared below.
+		const scope = (this.draft.scope ?? '').trim();
+
 		try {
 			await this.git.commit(message, options);
 		} catch (error) {
 			const detail = error instanceof Error ? error.message : String(error);
 			void vscode.window.showErrorMessage(`Commit failed: ${detail}`);
 			return false;
+		}
+
+		// The only place a scope becomes "recent". Recording it while typing meant
+		// every abandoned keystroke became a permanent suggestion chip.
+		if (scope) {
+			this.drafts.rememberScope(scope);
 		}
 
 		const key = this.repositoryKey;
@@ -275,6 +284,12 @@ export class Composer implements vscode.Disposable {
 
 	getRecentScopes(): string[] {
 		return this.drafts.getRecentScopes();
+	}
+
+	/** Empties the recent scope suggestions and refreshes the panel. */
+	clearRecentScopes(): void {
+		this.drafts.clearRecentScopes();
+		this.onDidChangeEmitter.fire();
 	}
 
 	/** Scope candidates derived from the current branch name. */

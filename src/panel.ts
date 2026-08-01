@@ -119,13 +119,14 @@ export class ComposerViewProvider implements vscode.WebviewViewProvider, vscode.
 
 			case 'setScope': {
 				const scope = message.value.trim();
+				// Deliberately does not record the scope as "recent": this fires on
+				// every debounced keystroke, so it used to bank every half-typed
+				// prefix ("a", "ap", "api") as a permanent suggestion. A scope only
+				// counts as used once it has actually been committed with.
 				return this.edit(() => {
 					// Typing a scope by hand takes it out of the branch's control, so a
 					// later branch switch will not overwrite the choice.
 					this.composer.update({ scope, scopeSource: 'custom' });
-					if (scope) {
-						this.composer.rememberScope(scope);
-					}
 				});
 			}
 

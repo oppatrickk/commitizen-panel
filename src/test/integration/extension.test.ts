@@ -232,6 +232,41 @@ suite('Conventional Commit Panel', () => {
 			}
 		});
 
+		test('typing a scope does not add it to the suggestions', async () => {
+			api.drafts.clearRecentScopes();
+
+			// setScope fires on every debounced keystroke, so recording there banked
+			// each half-typed prefix as a permanent suggestion chip that clearing the
+			// field could not remove.
+			for (const partial of ['a', 'ap', 'api']) {
+				api.composer.update({ scope: partial, scopeSource: 'custom' });
+			}
+
+			assert.deepStrictEqual(api.composer.getRecentScopes(), []);
+		});
+
+		test('clearing the scope leaves no suggestion behind', async () => {
+			api.drafts.clearRecentScopes();
+
+			api.composer.update({ scope: 'throwaway', scopeSource: 'custom' });
+			api.composer.update({ scope: '', scopeSource: 'custom' });
+
+			assert.strictEqual(
+				api.composer.getRecentScopes().includes('throwaway'),
+				false,
+				'an abandoned scope should not linger as a suggestion',
+			);
+		});
+
+		test('clearRecentScopes empties the list', async () => {
+			api.drafts.rememberScope('api');
+			assert.ok(api.composer.getRecentScopes().length > 0);
+
+			api.composer.clearRecentScopes();
+
+			assert.deepStrictEqual(api.composer.getRecentScopes(), []);
+		});
+
 		test('a scope the user chose survives a config refresh', async () => {
 			api.composer.update({ scope: 'handpicked', scopeSource: 'custom' });
 			await api.composer.refresh();

@@ -17,7 +17,9 @@ is a text field — type your own if the list doesn't cover it.
 
 **Branch-aware scope.** On `feature/PROJ-123-add-login` the panel suggests `PROJ-123`, pre-selected.
 Switch branches and the suggestion follows; pick a scope yourself and it stays put. Suggestion chips
-are drawn from the branch, your repository config, and scopes you've used recently.
+are drawn from the branch, your repository config, and scopes you have committed with before. Typing
+in the field never adds a suggestion — only an actual commit does. *Conventional Commit: Clear Recent
+Scope Suggestions* empties the list.
 
 **Live validation.** A character counter and fill meter against the header limit, with the specific
 rule you're breaking named underneath. When your repo has commitlint, the rules being checked are the

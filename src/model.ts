@@ -106,6 +106,12 @@ export class DraftStore implements vscode.Disposable {
 		return [...this.recentScopes];
 	}
 
+	/** Empties the recently-used scope list. */
+	clearRecentScopes(): void {
+		this.recentScopes = [];
+		void this.memento.update(RECENT_SCOPES_KEY, this.recentScopes);
+	}
+
 	/** Records a scope as most-recently-used, capped at {@link MAX_RECENT_SCOPES}. */
 	rememberScope(scope: string): void {
 		const trimmed = scope.trim();

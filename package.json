@@ -91,6 +91,11 @@
         "icon": "$(gear)"
       },
       {
+        "command": "conventionalCommitPanel.clearRecentScopes",
+        "title": "Clear Recent Scope Suggestions",
+        "category": "Conventional Commit"
+      },
+      {
         "command": "conventionalCommitPanel.edit",
         "title": "Edit Commit Message Field",
         "category": "Conventional Commit"
