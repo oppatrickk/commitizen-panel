@@ -4,7 +4,12 @@
     Kept to two shapes and one accent colour so it stays legible at 32px in the
     Extensions list as well as at full size on the Marketplace page.
   -->
-  <rect width="128" height="128" rx="26" fill="#1F2430"/>
+  <!--
+    Full bleed, no rounded corners. The PNG is rasterised by flattening onto an
+    opaque background, so a rounded rect left white corners on the Marketplace
+    card. VS Code and the Marketplace draw extension icons in a square anyway.
+  -->
+  <rect width="128" height="128" fill="#1F2430"/>
 
   <!-- The commit line, with the node sitting on it. -->
   <path d="M46 20 V46" stroke="#5B7FFF" stroke-width="9" stroke-linecap="round"/>
