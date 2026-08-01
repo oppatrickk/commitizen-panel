@@ -3,8 +3,7 @@
   "displayName": "Commitizen Panel",
   "description": "Compose Conventional Commit messages from a persistent panel in the Source Control view.",
   "version": "0.1.0",
-  "//publisher": "TODO before publishing: replace with the Marketplace publisher ID you own. Create one at https://marketplace.visualstudio.com/manage — the value below is a placeholder and publishing will fail until it is changed.",
-  "publisher": "your-publisher-id",
+  "publisher": "patREKT",
   "license": "MIT",
   "icon": "media/icon.png",
   "repository": {

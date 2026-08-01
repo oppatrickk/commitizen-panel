@@ -127,18 +127,18 @@ When an integration test reports "activation produced no API", the underlying er
 
 ## Publishing
 
-> **`package.json` currently has `"publisher": "your-publisher-id"`, a placeholder.** Publishing
-> fails until it is replaced with a Marketplace publisher you actually own. The release workflow
-> checks for this and refuses to run rather than failing halfway.
+Published as **`patREKT.commitizen-panel`**.
 
 One-time setup:
 
-1. Create a publisher at <https://marketplace.visualstudio.com/manage> and set `publisher` in
-   `package.json` to its ID.
-2. Create a Personal Access Token in Azure DevOps (<https://dev.azure.com>) for **All accessible
+1. Create a Personal Access Token in Azure DevOps (<https://dev.azure.com>) for **All accessible
    organizations**, scoped to **Marketplace → Manage**.
-3. Add it to the repository as an Actions secret named `VSCE_PAT`
+2. Add it to the repository as an Actions secret named `VSCE_PAT`
    (`gh secret set VSCE_PAT`), or keep it local for `vsce login`.
+
+The `publisher` field must match the registered ID exactly, including case — the release workflow
+guards against it being left as a placeholder, but it cannot check that the ID is one you own. The
+first publish is where a mismatch surfaces.
 
 To release:
 

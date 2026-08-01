@@ -51,13 +51,17 @@ jobs:
             exit 1
           fi
 
-      - name: Refuse to publish with the placeholder publisher
+      # Kept as a regression guard: an unset publisher would otherwise only surface
+      # as an authentication failure partway through publishing.
+      - name: Refuse to publish with a placeholder publisher
         run: |
           publisher="$(node -p "require('./package.json').publisher")"
-          if [ "$publisher" = "your-publisher-id" ]; then
-            echo "package.json still has the placeholder publisher. Set a Marketplace publisher you own first." >&2
-            exit 1
-          fi
+          case "$publisher" in
+            ''|your-publisher-id|TODO*)
+              echo "package.json has a placeholder publisher ($publisher). Set a Marketplace publisher you own first." >&2
+              exit 1
+              ;;
+          esac
 
       - name: Package
         run: npx vsce package --out commitizen-panel.vsix
