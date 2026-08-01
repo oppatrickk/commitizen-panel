@@ -7,6 +7,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-08-01
+
+### Fixed
+
+- Scopes typed into the field are no longer banked as suggestions. The scope was recorded on every
+  debounced keystroke, so pausing while typing `api` stored `a`, `ap` and `api` permanently — and
+  clearing the field could not undo it. A scope now becomes a suggestion only once it has actually
+  been committed with.
+- The Marketplace icon no longer has white corners.
+
+### Added
+
+- **Clear Recent Scope Suggestions** command, to remove entries banked by the old behaviour.
+- A screenshot of the panel in the README.
+
+### Changed
+
+- The current branch is always offered as a scope suggestion chip, whatever it is.
+  `conventionalCommitPanel.scope.ignoreBranches` now only controls whether it is *filled in*
+  automatically, so a long-lived branch name never lands in a commit by itself but stays one click
+  away. Set the list to `[]` to have it filled in on every branch.
+
 ## [0.1.0] - 2026-07-31
 
 First release.
@@ -48,5 +70,6 @@ First release.
   text you typed there by hand.
 - The panel does not duplicate the file lists; VS Code's own `Changes` section already does that.
 
-[Unreleased]: https://github.com/oppatrickk/conventional-commit-panel/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/oppatrickk/conventional-commit-panel/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/oppatrickk/conventional-commit-panel/releases/tag/v0.1.1
 [0.1.0]: https://github.com/oppatrickk/conventional-commit-panel/releases/tag/v0.1.0
