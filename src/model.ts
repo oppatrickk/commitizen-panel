@@ -27,9 +27,9 @@ export interface CommitDraft {
 
 export const EMPTY_DRAFT: CommitDraft = {};
 
-const DRAFTS_KEY = 'commitizen.drafts';
-const RECENT_SCOPES_KEY = 'commitizen.recentScopes';
-const LAST_WRITTEN_KEY = 'commitizen.lastWritten';
+const DRAFTS_KEY = 'conventionalCommitPanel.drafts';
+const RECENT_SCOPES_KEY = 'conventionalCommitPanel.recentScopes';
+const LAST_WRITTEN_KEY = 'conventionalCommitPanel.lastWritten';
 const MAX_RECENT_SCOPES = 20;
 
 /**

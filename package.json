@@ -1,6 +1,6 @@
 {
-  "name": "commitizen-panel",
-  "displayName": "Commitizen Panel",
+  "name": "conventional-commit-panel",
+  "displayName": "Conventional Commit Panel",
   "description": "Compose Conventional Commit messages from a persistent panel in the Source Control view.",
   "version": "0.1.0",
   "publisher": "patREKT",
@@ -8,12 +8,12 @@
   "icon": "media/icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/oppatrickk/commitizen-panel.git"
+    "url": "https://github.com/oppatrickk/conventional-commit-panel.git"
   },
   "bugs": {
-    "url": "https://github.com/oppatrickk/commitizen-panel/issues"
+    "url": "https://github.com/oppatrickk/conventional-commit-panel/issues"
   },
-  "homepage": "https://github.com/oppatrickk/commitizen-panel#readme",
+  "homepage": "https://github.com/oppatrickk/conventional-commit-panel#readme",
   "galleryBanner": {
     "color": "#1F2430",
     "theme": "dark"
@@ -46,118 +46,118 @@
     "views": {
       "scm": [
         {
-          "id": "commitizen.composer",
-          "name": "Commitizen",
+          "id": "conventionalCommitPanel.composer",
+          "name": "Conventional Commit",
           "type": "webview",
-          "when": "commitizen.hasRepository"
+          "when": "conventionalCommitPanel.hasRepository"
         }
       ]
     },
     "commands": [
       {
-        "command": "commitizen.wizard",
+        "command": "conventionalCommitPanel.wizard",
         "title": "Compose Commit Message",
-        "category": "Commitizen",
+        "category": "Conventional Commit",
         "icon": "$(play)"
       },
       {
-        "command": "commitizen.reset",
+        "command": "conventionalCommitPanel.reset",
         "title": "Reset Commit Message Draft",
-        "category": "Commitizen",
+        "category": "Conventional Commit",
         "icon": "$(clear-all)"
       },
       {
-        "command": "commitizen.apply",
+        "command": "conventionalCommitPanel.apply",
         "title": "Apply Draft to Commit Box",
-        "category": "Commitizen",
+        "category": "Conventional Commit",
         "icon": "$(check)"
       },
       {
-        "command": "commitizen.editBodyInEditor",
+        "command": "conventionalCommitPanel.editBodyInEditor",
         "title": "Edit Body in Editor",
-        "category": "Commitizen",
+        "category": "Conventional Commit",
         "icon": "$(edit)"
       },
       {
-        "command": "commitizen.commit",
+        "command": "conventionalCommitPanel.commit",
         "title": "Commit",
-        "category": "Commitizen",
+        "category": "Conventional Commit",
         "icon": "$(check)"
       },
       {
-        "command": "commitizen.openSettings",
+        "command": "conventionalCommitPanel.openSettings",
         "title": "Open Settings",
-        "category": "Commitizen",
+        "category": "Conventional Commit",
         "icon": "$(gear)"
       },
       {
-        "command": "commitizen.edit",
+        "command": "conventionalCommitPanel.edit",
         "title": "Edit Commit Message Field",
-        "category": "Commitizen"
+        "category": "Conventional Commit"
       }
     ],
     "menus": {
       "scm/title": [
         {
-          "command": "commitizen.wizard",
+          "command": "conventionalCommitPanel.wizard",
           "group": "navigation",
           "when": "scmProvider == git"
         }
       ],
       "view/title": [
         {
-          "command": "commitizen.wizard",
-          "when": "view == commitizen.composer",
+          "command": "conventionalCommitPanel.wizard",
+          "when": "view == conventionalCommitPanel.composer",
           "group": "navigation@1"
         },
         {
-          "command": "commitizen.reset",
-          "when": "view == commitizen.composer",
+          "command": "conventionalCommitPanel.reset",
+          "when": "view == conventionalCommitPanel.composer",
           "group": "navigation@2"
         },
         {
-          "command": "commitizen.openSettings",
-          "when": "view == commitizen.composer",
+          "command": "conventionalCommitPanel.openSettings",
+          "when": "view == conventionalCommitPanel.composer",
           "group": "navigation@3"
         }
       ],
       "commandPalette": [
         {
-          "command": "commitizen.edit",
+          "command": "conventionalCommitPanel.edit",
           "when": "false"
         },
         {
-          "command": "commitizen.editBodyInEditor",
-          "when": "commitizen.hasRepository"
+          "command": "conventionalCommitPanel.editBodyInEditor",
+          "when": "conventionalCommitPanel.hasRepository"
         }
       ]
     },
     "configuration": {
-      "title": "Commitizen Panel",
+      "title": "Conventional Commit Panel",
       "properties": {
-        "commitizen.liveSync": {
+        "conventionalCommitPanel.liveSync": {
           "type": "boolean",
           "default": true,
           "description": "Continuously write the composed message into the Source Control input box as you edit fields. The extension never creates the commit itself — you still press Commit."
         },
-        "commitizen.headerMaxLength": {
+        "conventionalCommitPanel.headerMaxLength": {
           "type": "number",
           "default": 72,
           "minimum": 20,
           "description": "Maximum length of the commit header (type, scope and subject). Overridden by a commitlint 'header-max-length' rule when one is found."
         },
-        "commitizen.bodyLineLength": {
+        "conventionalCommitPanel.bodyLineLength": {
           "type": "number",
           "default": 72,
           "minimum": 0,
           "description": "Wrap the commit body at this column. Set to 0 to disable wrapping."
         },
-        "commitizen.useEmoji": {
+        "conventionalCommitPanel.useEmoji": {
           "type": "boolean",
           "default": false,
           "description": "Prefix the commit subject with the emoji associated with the selected type."
         },
-        "commitizen.types": {
+        "conventionalCommitPanel.types": {
           "type": "array",
           "default": [],
           "markdownDescription": "Commit types to offer. When empty, types are taken from the repository config (`.cz-config.js`, `.czrc`, commitlint) or the built-in Conventional Commits list.",
@@ -181,17 +181,17 @@
               },
               "emoji": {
                 "type": "string",
-                "description": "Emoji used when commitizen.useEmoji is enabled."
+                "description": "Emoji used when conventionalCommitPanel.useEmoji is enabled."
               }
             }
           }
         },
-        "commitizen.scope.ticketPattern": {
+        "conventionalCommitPanel.scope.ticketPattern": {
           "type": "string",
           "default": "([A-Z][A-Z0-9]+-\\d+)",
           "markdownDescription": "Regular expression used to pull a ticket ID out of the branch name, e.g. `feature/PROJ-123-add-login` → `PROJ-123`. The first capture group is used when present."
         },
-        "commitizen.scope.branchPrefixes": {
+        "conventionalCommitPanel.scope.branchPrefixes": {
           "type": "array",
           "default": [
             "feature",
@@ -207,22 +207,22 @@
           },
           "description": "Branch name prefixes stripped before falling back to the branch segment as a scope."
         },
-        "commitizen.scope.required": {
+        "conventionalCommitPanel.scope.required": {
           "type": "boolean",
           "default": false,
           "markdownDescription": "Treat an empty scope as an error. Conventional Commits makes the scope optional, so this is off by default; turn it on to block committing until a scope is set."
         },
-        "commitizen.showBreakingChange": {
+        "conventionalCommitPanel.showBreakingChange": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Show the breaking-change toggle. It adds a `!` marker and a `BREAKING CHANGE:` footer, which release tooling reads as a major version bump — turn it off in repositories that do not publish versioned packages."
         },
-        "commitizen.showCustomType": {
+        "conventionalCommitPanel.showCustomType": {
           "type": "boolean",
           "default": true,
           "description": "Show a Custom card at the end of the type grid for typing a type that is not on the list. A repository that pins its types with a commitlint type-enum rule will still report a custom type as invalid."
         },
-        "commitizen.scope.ignoreBranches": {
+        "conventionalCommitPanel.scope.ignoreBranches": {
           "type": "array",
           "default": [
             "main",
@@ -236,12 +236,12 @@
           },
           "description": "Branches that should not produce a scope suggestion."
         },
-        "commitizen.config.allowJsConfig": {
+        "conventionalCommitPanel.config.allowJsConfig": {
           "type": "boolean",
           "default": false,
           "markdownDescription": "Allow loading JavaScript commit configs (`.cz-config.js`, `commitlint.config.js`) from the repository. These are executed in a short-lived child process. JSON and YAML configs are always read and never executed."
         },
-        "commitizen.body.useEditor": {
+        "conventionalCommitPanel.body.useEditor": {
           "type": "boolean",
           "default": false,
           "description": "Always edit the commit body in a full editor tab instead of a single-line input box."

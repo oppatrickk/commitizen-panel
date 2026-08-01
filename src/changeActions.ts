@@ -38,7 +38,7 @@ export class ChangeActions {
 
 		const capped = capRows(buildRows(inputs, root), MAX_ROWS);
 		if (capped.hidden > 0) {
-			console.info(`[commitizen] change list capped at ${MAX_ROWS}; ${capped.hidden} rows not shown`);
+			console.info(`[conventional-commit-panel] change list capped at ${MAX_ROWS}; ${capped.hidden} rows not shown`);
 		}
 		return capped;
 	}
@@ -142,7 +142,7 @@ export class ChangeActions {
 		const gitPath = this.git.gitPath;
 		const cwd = this.git.rootUri?.fsPath;
 		if (!gitPath || !cwd) {
-			void vscode.window.showErrorMessage('Commitizen: the Git extension has not reported a git binary yet.');
+			void vscode.window.showErrorMessage('Conventional Commit Panel: the Git extension has not reported a git binary yet.');
 			return undefined;
 		}
 		return { gitPath, cwd };
@@ -182,6 +182,6 @@ export class ChangeActions {
 
 	private report(prefix: string, error: unknown): void {
 		const detail = error instanceof Error ? error.message : String(error);
-		void vscode.window.showErrorMessage(`Commitizen: ${prefix} — ${detail}`);
+		void vscode.window.showErrorMessage(`Conventional Commit Panel: ${prefix} — ${detail}`);
 	}
 }

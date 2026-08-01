@@ -9,13 +9,13 @@ import { ComposerViewProvider } from './panel';
 export const VIEW_ID = ComposerViewProvider.viewType;
 
 /** Exposed to integration tests so they can drive the real objects. */
-export interface CommitizenApi {
+export interface CommitPanelApi {
 	composer: Composer;
 	git: GitService;
 	drafts: DraftStore;
 }
 
-export async function activate(context: vscode.ExtensionContext): Promise<CommitizenApi> {
+export async function activate(context: vscode.ExtensionContext): Promise<CommitPanelApi> {
 	const git = await GitService.create();
 	const configService = new ConfigService();
 	const drafts = new DraftStore(context.workspaceState);

@@ -238,7 +238,7 @@ export class Composer implements vscode.Disposable {
 	async commit(options?: { all?: boolean; amend?: boolean }): Promise<boolean> {
 		const message = this.renderMessage();
 		if (!message.trim()) {
-			void vscode.window.showWarningMessage('Commitizen: nothing to commit — the message is empty.');
+			void vscode.window.showWarningMessage('Conventional Commit Panel: nothing to commit — the message is empty.');
 			return false;
 		}
 

@@ -48,11 +48,11 @@ jobs:
         run: xvfb-run -a npm run test:integration
 
       - name: Package
-        run: npx vsce package --out commitizen-panel.vsix
+        run: npx vsce package --out conventional-commit-panel.vsix
 
       - name: Upload VSIX
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: commitizen-panel-vsix
-          path: commitizen-panel.vsix
+          name: conventional-commit-panel-vsix
+          path: conventional-commit-panel.vsix

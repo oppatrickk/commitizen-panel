@@ -23,13 +23,13 @@ export function registerCommands(
 	composer: Composer,
 ): vscode.Disposable[] {
 	return [
-		vscode.commands.registerCommand('commitizen.edit', (key: FieldKey) => editField(context, composer, key)),
-		vscode.commands.registerCommand('commitizen.editBodyInEditor', () => editBodyInEditor(context, composer)),
-		vscode.commands.registerCommand('commitizen.wizard', () => runWizard(composer)),
-		vscode.commands.registerCommand('commitizen.apply', () => composer.applyToInputBox()),
-		vscode.commands.registerCommand('commitizen.reset', () => composer.reset()),
-		vscode.commands.registerCommand('commitizen.commit', () => composer.commit()),
-		vscode.commands.registerCommand('commitizen.openSettings', () =>
+		vscode.commands.registerCommand('conventionalCommitPanel.edit', (key: FieldKey) => editField(context, composer, key)),
+		vscode.commands.registerCommand('conventionalCommitPanel.editBodyInEditor', () => editBodyInEditor(context, composer)),
+		vscode.commands.registerCommand('conventionalCommitPanel.wizard', () => runWizard(composer)),
+		vscode.commands.registerCommand('conventionalCommitPanel.apply', () => composer.applyToInputBox()),
+		vscode.commands.registerCommand('conventionalCommitPanel.reset', () => composer.reset()),
+		vscode.commands.registerCommand('conventionalCommitPanel.commit', () => composer.commit()),
+		vscode.commands.registerCommand('conventionalCommitPanel.openSettings', () =>
 			// Derived rather than hardcoded: the publisher is a placeholder until
 			// release, and a stale literal here would silently open an empty
 			// settings filter.
@@ -97,7 +97,7 @@ async function editSubject(composer: Composer): Promise<void> {
 }
 
 async function editBody(context: vscode.ExtensionContext, composer: Composer): Promise<void> {
-	if (vscode.workspace.getConfiguration('commitizen').get<boolean>('body.useEditor', false)) {
+	if (vscode.workspace.getConfiguration('conventionalCommitPanel').get<boolean>('body.useEditor', false)) {
 		return editBodyInEditor(context, composer);
 	}
 

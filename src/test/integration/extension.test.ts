@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import type { CommitizenApi } from '../../extension';
+import type { CommitPanelApi } from '../../extension';
 
-const EXTENSION_NAME = 'commitizen-panel';
+const EXTENSION_NAME = 'conventional-commit-panel';
 
 /**
  * Looks the extension up by name rather than by `publisher.name`.
@@ -11,10 +11,10 @@ const EXTENSION_NAME = 'commitizen-panel';
  * break the entire suite the moment it is set for real — which is exactly what
  * happened once already.
  */
-async function getApi(): Promise<CommitizenApi> {
+async function getApi(): Promise<CommitPanelApi> {
 	const extension = vscode.extensions.all.find(
 		(candidate) => candidate.packageJSON?.name === EXTENSION_NAME,
-	) as vscode.Extension<CommitizenApi> | undefined;
+	) as vscode.Extension<CommitPanelApi> | undefined;
 	assert.ok(extension, `no extension named "${EXTENSION_NAME}" is loaded in the test host`);
 
 	const api = extension.isActive ? extension.exports : await extension.activate();
@@ -28,7 +28,7 @@ async function getApi(): Promise<CommitizenApi> {
 }
 
 /** The Git extension discovers repositories asynchronously after activation. */
-async function waitForRepository(api: CommitizenApi, timeoutMs = 20000): Promise<boolean> {
+async function waitForRepository(api: CommitPanelApi, timeoutMs = 20000): Promise<boolean> {
 	const deadline = Date.now() + timeoutMs;
 	while (Date.now() < deadline) {
 		if (api.git.activeRepositoryKey) {
@@ -40,7 +40,7 @@ async function waitForRepository(api: CommitizenApi, timeoutMs = 20000): Promise
 	return false;
 }
 
-suite('Commitizen panel', () => {
+suite('Conventional Commit Panel', () => {
 	test('activates and exposes the composer', async () => {
 		const api = await getApi();
 		assert.ok(api.composer, 'composer was not exported');
@@ -52,11 +52,11 @@ suite('Commitizen panel', () => {
 		const commands = await vscode.commands.getCommands(true);
 
 		for (const command of [
-			'commitizen.wizard',
-			'commitizen.edit',
-			'commitizen.editBodyInEditor',
-			'commitizen.apply',
-			'commitizen.reset',
+			'conventionalCommitPanel.wizard',
+			'conventionalCommitPanel.edit',
+			'conventionalCommitPanel.editBodyInEditor',
+			'conventionalCommitPanel.apply',
+			'conventionalCommitPanel.reset',
 		]) {
 			assert.ok(commands.includes(command), `${command} was not registered`);
 		}
@@ -73,7 +73,7 @@ suite('Commitizen panel', () => {
 	});
 
 	suite('with a repository', () => {
-		let api: CommitizenApi;
+		let api: CommitPanelApi;
 		let available = false;
 
 		suiteSetup(async function () {
@@ -96,9 +96,9 @@ suite('Commitizen panel', () => {
 
 		test('live sync writes the rendered message into the commit box', async () => {
 			api.composer.update({ type: 'feat', scope: 'panel', scopeSource: 'custom' });
-			api.composer.update({ subject: 'add commitizen rows' });
+			api.composer.update({ subject: 'add composer rows' });
 
-			assert.strictEqual(api.git.getCommitMessage(), 'feat(panel): add commitizen rows');
+			assert.strictEqual(api.git.getCommitMessage(), 'feat(panel): add composer rows');
 		});
 
 		test('a body is separated from the header by a blank line', async () => {
@@ -214,7 +214,7 @@ suite('Commitizen panel', () => {
 				this.skip();
 			}
 
-			const configuration = vscode.workspace.getConfiguration('commitizen');
+			const configuration = vscode.workspace.getConfiguration('conventionalCommitPanel');
 			const previous = configuration.get<string[]>('scope.ignoreBranches');
 
 			// Neutralise the ignore list so whatever branch the tests run on produces
@@ -325,8 +325,8 @@ suite('Commitizen panel', () => {
 			assert.strictEqual(api.composer.draft.type, 'deps');
 		});
 
-		test('honours commitizen.scope.required', async () => {
-			const configuration = vscode.workspace.getConfiguration('commitizen');
+		test('honours conventionalCommitPanel.scope.required', async () => {
+			const configuration = vscode.workspace.getConfiguration('conventionalCommitPanel');
 			const previous = configuration.get<boolean>('scope.required');
 
 			await configuration.update('scope.required', true, vscode.ConfigurationTarget.Global);

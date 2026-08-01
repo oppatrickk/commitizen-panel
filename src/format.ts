@@ -220,7 +220,7 @@ export interface ValidationRules {
 	 * Whether an empty scope is an error.
 	 *
 	 * Conventional Commits treats scope as optional, so this is opt-in via
-	 * `commitizen.scope.required` rather than a default.
+	 * `conventionalCommitPanel.scope.required` rather than a default.
 	 */
 	scopeRequired?: boolean;
 }

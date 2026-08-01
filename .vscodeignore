@@ -2,6 +2,7 @@
 .vscode-test/**
 .vscode-test.mjs
 .github/**
+CONTRIBUTING.md
 out-test/**
 src/**
 scripts/**

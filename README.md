@@ -1,169 +1,84 @@
-# Commitizen Panel
+# Conventional Commit Panel
 
-Compose Conventional Commit messages from a persistent panel inside the Source Control view.
+Compose [Conventional Commit](https://www.conventionalcommits.org/en/v1.0.0/) messages from a
+panel that lives in the Source Control view — pick a type, scope and subject in any order, see the
+message as you build it, and commit.
 
-Existing Conventional Commit extensions give you a one-shot modal wizard: pick the wrong type on
-step 1 and you start over, and nothing shows you the message you are assembling. This one adds a
-**`COMMITIZEN` section that sits under `CHANGES`**, where every field holds its value and can be
-re-edited in any order.
+![The Conventional Commit Panel in the Source Control view](images/panel.png)
 
-```
-∨ COMMITIZEN                    accounting-invoices
-    TYPE                              New capability
-    ┌──────────────┐ ┌──────────────┐
-    │ ✨  feat      │ │ 🐛  fix       │
-    │    New capa… │ │    Bug fix   │
-    └──────────────┘ └──────────────┘
-    ┌──────────────┐
-    │ ✎  |custom   │  ← type straight into the card
-    └──────────────┘
-    SCOPE
-    ✦ accounting-invoices   ✦ api   ✦ deps
-    SUBJECT                                  61/72
-    BODY / BREAKING / PREVIEW
-    ─────────────────────────────────────────────
-    ✓ 3 files staged            husky · commitlint
-    [              Commit              ] [∨]
+Existing extensions give you a one-shot modal wizard: pick the wrong type on step one and you start
+over, and nothing shows you the message you are assembling. This one keeps every field on screen and
+editable, with a live preview of exactly what will be committed.
 
-∨ CHANGES                                       27
-```
+## Features
 
-**Committing is always a deliberate press of the Commit button.** Nothing in the extension
-creates a commit on its own.
+**Type grid.** Every commit type as a card, with an icon and a one-line description. The last card
+is a text field — type your own if the list doesn't cover it.
 
-The panel deliberately does **not** duplicate the file lists — VS Code's own `Changes` section sits
-directly below it and already does that job well.
+**Branch-aware scope.** On `feature/PROJ-123-add-login` the panel suggests `PROJ-123`, pre-selected.
+Switch branches and the suggestion follows; pick a scope yourself and it stays put. Suggestion chips
+are drawn from the branch, your repository config, and scopes you've used recently.
 
-## What it does
+**Live validation.** A character counter and fill meter against the header limit, with the specific
+rule you're breaking named underneath. When your repo has commitlint, the rules being checked are the
+ones parsed from its config.
 
-- **Custom type, typed in place.** The last card in the type grid *is* a text field — click it and
-  type. Characters that would change how the header parses (`(`, `)`, `!`, `:`, whitespace) are
-  rejected, but the panel does not nag you for picking a type outside the repo list — that is the
-  point of the card. If a commitlint hook really does enforce the list, it says so at commit time and
-  that message is surfaced verbatim.
-- **A staged-files check.** The footer states plainly what a commit would contain — `3 files staged`,
-  `No files staged`, or `No changes` — with unstaged work called out rather than left implicit.
-- **Branch-aware scope.** `feature/PROJ-123-add-login` suggests `PROJ-123`, pre-selected and
-  always overridable. Switch branches and the scope follows — unless you picked one yourself.
-  Suggestion chips are marked with a sparkle, and their tooltip says where each came from — the
-  current branch, the repository config, or one you used recently.
-- **Live validation.** Character counter against the header limit, a fill meter, and the specific
-  rule you're breaking. When the repo has commitlint, the rules checked are the ones parsed from
-  its config.
-- **Guided wizard.** The ▶ button in the Source Control toolbar runs the same fields as a
-  step-by-step flow with a back button. Panel and wizard share one draft.
-- **Repository config.** Reads types from `.cz-config.js`, `.czrc`, `package.json#config.commitizen`
-  or a commitlint config, falling back to the standard Conventional Commits list.
-- **Never clobbers your typing.** If you edit the Source Control commit box by hand, the panel stops
-  mirroring into it rather than overwriting what you wrote. Committing from the panel is unaffected —
-  it always uses the panel's own draft.
+**Live preview.** The rendered message with syntax colouring, so there are no surprises in
+`git log`.
 
-### About the breaking-change toggle
+**Breaking changes.** A toggle that adds the `!` marker and the `BREAKING CHANGE:` footer, showing
+the resulting release impact — `patch`, `minor` or `major`.
 
-It marks the commit as breaking API compatibility: a `!` after the scope
-(`feat(accounting-invoices)!: …`) plus a `BREAKING CHANGE:` footer. Release tooling such as
-semantic-release reads that and bumps the **major** version — which is what the label beside the
-toggle reports (`minor` for a `feat`, `patch` for a `fix`, `major` once breaking is on). Repos that
-don't publish versioned packages can hide it with `commitizen.showBreakingChange`.
+**Reads your existing config.** Types and scopes come from `.cz-config.js`, `.czrc`,
+`package.json#config.commitizen` or a commitlint config, falling back to the standard Conventional
+Commits list when there's nothing to read.
 
-### On the panel's height
+**Guided wizard.** Prefer a linear flow? The toolbar button walks the same fields step by step, with
+a back button. It shares one draft with the panel, so you can switch between them freely.
 
-VS Code gives a contributed webview view whatever height the container decides. `WebviewView` has no
-size API, and the `initialSize` field on a view contribution is only honoured when the extension owns
-the view container too — which it does not, since this view lives in the built-in `scm` container.
-
-So the panel fills the height it is given: the fields scroll and the Commit button stays pinned at the
-bottom, so it is reachable however tall you drag the section.
+Your draft survives a window reload, and the panel never overwrites text you typed into the Source
+Control box by hand.
 
 ## Settings
 
 | Setting | Default | Description |
 | --- | --- | --- |
-| `commitizen.liveSync` | `true` | Mirror the draft into the commit box as you edit. |
-| `commitizen.headerMaxLength` | `72` | Header limit. A commitlint `header-max-length` rule wins over this. |
-| `commitizen.bodyLineLength` | `72` | Wrap column for the body. `0` disables wrapping. |
-| `commitizen.useEmoji` | `false` | Prefix the subject with the type's emoji. |
-| `commitizen.types` | `[]` | Custom type list. Empty means repo config, then the built-in list. |
-| `commitizen.scope.ticketPattern` | `([A-Z][A-Z0-9]+-\d+)` | Pulls a ticket ID out of the branch name. |
-| `commitizen.scope.branchPrefixes` | `feature, feat, fix, …` | Prefixes stripped before the segment fallback. |
-| `commitizen.scope.ignoreBranches` | `main, master, develop, dev, trunk` | Branches that suggest no scope. |
-| `commitizen.scope.required` | `false` | Treat an empty scope as an error. Off by default — Conventional Commits makes scope optional. |
-| `commitizen.showBreakingChange` | `true` | Show the breaking-change toggle. |
-| `commitizen.showCustomType` | `true` | Show the Custom card at the end of the type grid. |
-| `commitizen.config.allowJsConfig` | `false` | Allow executing JS configs from the repository. |
-| `commitizen.body.useEditor` | `false` | Always edit the body in an editor tab. |
+| `conventionalCommitPanel.liveSync` | `true` | Mirror the draft into the commit box as you edit. |
+| `conventionalCommitPanel.headerMaxLength` | `72` | Header limit. A commitlint `header-max-length` rule wins over this. |
+| `conventionalCommitPanel.bodyLineLength` | `72` | Wrap column for the body. `0` disables wrapping. |
+| `conventionalCommitPanel.useEmoji` | `false` | Prefix the subject with the type's emoji. |
+| `conventionalCommitPanel.types` | `[]` | Custom type list. Empty means repo config, then the built-in list. |
+| `conventionalCommitPanel.scope.ticketPattern` | `([A-Z][A-Z0-9]+-\d+)` | Pulls a ticket ID out of the branch name. |
+| `conventionalCommitPanel.scope.branchPrefixes` | `feature, feat, fix, …` | Prefixes stripped before the segment fallback. |
+| `conventionalCommitPanel.scope.ignoreBranches` | `main, master, develop, dev, trunk` | Branches that suggest no scope. |
+| `conventionalCommitPanel.scope.required` | `false` | Treat an empty scope as an error. Off by default — the spec makes scope optional. |
+| `conventionalCommitPanel.showBreakingChange` | `true` | Show the breaking-change toggle. |
+| `conventionalCommitPanel.showCustomType` | `true` | Show the Custom card at the end of the type grid. |
+| `conventionalCommitPanel.config.allowJsConfig` | `false` | Allow executing JS configs from the repository. |
+| `conventionalCommitPanel.body.useEditor` | `false` | Always edit the body in an editor tab. |
 
-### A note on JavaScript configs
+## Notes
 
-`.cz-config.js` and `commitlint.config.js` are code, and loading them means running code from the
-repository you just opened. That is off by default. When enabled, it happens in a short-lived child
-process rather than in the extension host, and it is skipped entirely in untrusted workspaces.
-JSON and YAML configs are parsed, never executed, and always read.
+**Nothing commits on its own.** The Commit button is the only path to a commit.
 
-## Development
+**JavaScript configs are opt-in.** `.cz-config.js` and `commitlint.config.js` are code, and loading
+them means running code from the repository you just opened. That is off unless you enable
+`conventionalCommitPanel.config.allowJsConfig`, is skipped entirely in untrusted workspaces, and
+happens in a short-lived child process rather than inside the extension host. JSON and YAML configs
+are parsed, never executed, and always read.
 
-```bash
-npm install
-npm run watch        # esbuild in watch mode
-# then press F5 to launch the Extension Development Host
+**No duplicate file list.** VS Code's own `Changes` section sits directly below the panel and already
+does that job well.
 
-npm run verify       # everything CI runs, in the same order — use this before pushing
+**Not affiliated with [Commitizen](https://github.com/commitizen/cz-cli).** This extension implements
+the Conventional Commits spec directly; it reads commitizen-style config files for compatibility but
+does not run the commitizen CLI.
 
-npm run check-types  # tsc --noEmit
-npm run lint
-npm test             # unit tests (no VS Code host needed)
-npm run test:integration
-npm run package      # → commitizen-panel-0.1.0.vsix
-```
+## Contributing
 
-Run `npm run verify` rather than the individual steps before pushing. Running them piecemeal is how
-a lint error reached CI once: the final edit landed after lint had already been run by hand.
+Bug reports and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for how to build,
+test and release.
 
-`format.ts`, `branch.ts` and `config.ts` are deliberately free of any `vscode` runtime import so
-they can be tested under plain mocha. Anything touching the editor lives elsewhere.
+## License
 
-When an integration test reports "activation produced no API", the underlying error is in
-`.vscode-test/user-data/logs/**/exthost/exthost.log` — it does not reach the test output.
-
-## Publishing
-
-Published as **`patREKT.commitizen-panel`**.
-
-One-time setup:
-
-1. Create a Personal Access Token in Azure DevOps (<https://dev.azure.com>) for **All accessible
-   organizations**, scoped to **Marketplace → Manage**.
-2. Add it to the repository as an Actions secret named `VSCE_PAT`
-   (`gh secret set VSCE_PAT`), or keep it local for `vsce login`.
-
-The `publisher` field must match the registered ID exactly, including case — the release workflow
-guards against it being left as a placeholder, but it cannot check that the ID is one you own. The
-first publish is where a mismatch surfaces.
-
-To release:
-
-```bash
-# 1. bump the version and write the changelog entry
-npm version minor          # or patch / major — this creates the v<version> tag
-# 2. push the commit and the tag
-git push --follow-tags
-```
-
-Pushing a `v*` tag runs [`.github/workflows/release.yml`](.github/workflows/release.yml), which
-re-runs the full test suite, verifies the tag matches `package.json`, attaches the `.vsix` to a
-GitHub release, and publishes to the Marketplace. Nothing publishes from a plain push to `main`.
-
-To do it by hand instead:
-
-```bash
-npx vsce login <publisher>
-npm run package        # produces commitizen-panel-<version>.vsix
-npx vsce publish
-```
-
-To try a build locally without publishing:
-
-```bash
-npm run package
-code --install-extension commitizen-panel-0.1.0.vsix
-```
+[MIT](LICENSE)

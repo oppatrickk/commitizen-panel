@@ -63,18 +63,35 @@ jobs:
               ;;
           esac
 
+      # vsce rewrites relative image paths in the README to raw.githubusercontent
+      # URLs, so a missing file does not fail the build — it just renders as a
+      # broken image on the Marketplace page, where it is most visible.
+      - name: Check README images exist
+        run: |
+          missing=0
+          while IFS= read -r img; do
+            case "$img" in
+              http*) continue ;;
+            esac
+            if [ ! -f "$img" ]; then
+              echo "README references a missing image: $img" >&2
+              missing=1
+            fi
+          done < <(grep -o '!\[[^]]*\]([^)]*)' README.md | sed 's/.*(\(.*\))/\1/')
+          exit $missing
+
       - name: Package
-        run: npx vsce package --out commitizen-panel.vsix
+        run: npx vsce package --out conventional-commit-panel.vsix
 
       - name: Attach the VSIX to the release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: commitizen-panel.vsix
+          files: conventional-commit-panel.vsix
           generate_release_notes: true
 
       - name: Publish to the Marketplace
         if: startsWith(github.ref, 'refs/tags/v') && inputs.dry_run != true
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: npx vsce publish --packagePath commitizen-panel.vsix
+        run: npx vsce publish --packagePath conventional-commit-panel.vsix

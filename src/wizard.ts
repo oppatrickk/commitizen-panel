@@ -25,7 +25,7 @@ const WIZARD_STEPS: FieldKey[] = ['type', 'scope', 'subject', 'body', 'breaking'
  */
 export async function runWizard(composer: Composer): Promise<void> {
 	if (!composer.repositoryKey) {
-		void vscode.window.showWarningMessage('Commitizen: open a Git repository to compose a commit message.');
+		void vscode.window.showWarningMessage('Conventional Commit Panel: open a Git repository to compose a commit message.');
 		return;
 	}
 

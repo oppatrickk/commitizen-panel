@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Commitizen panel front-end.
+ * Conventional Commit Panel front-end.
  *
  * The draft itself lives in the extension host; this script renders the state it
  * is handed and reports edits back. All DOM is built through createElement and

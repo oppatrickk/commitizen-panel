@@ -55,7 +55,7 @@ export class ConfigService implements vscode.Disposable {
 	constructor() {
 		this.disposables.push(
 			vscode.workspace.onDidChangeConfiguration((event) => {
-				if (event.affectsConfiguration('commitizen')) {
+				if (event.affectsConfiguration('conventionalCommitPanel')) {
 					this.cache.clear();
 					this.toolingCache.clear();
 					this.onDidChangeEmitter.fire();
@@ -149,7 +149,7 @@ export class ConfigService implements vscode.Disposable {
 	}
 
 	setting<T>(key: string, fallback: T): T {
-		return vscode.workspace.getConfiguration('commitizen').get<T>(key, fallback);
+		return vscode.workspace.getConfiguration('conventionalCommitPanel').get<T>(key, fallback);
 	}
 
 	private settingsOrBuiltIn(): CommitConfig {
@@ -354,14 +354,14 @@ export class ConfigService implements vscode.Disposable {
 
 		const enable = 'Enable';
 		const choice = await vscode.window.showInformationMessage(
-			`Commitizen found ${basename(uri)} in this repository. Loading it runs JavaScript from the workspace.`,
+			`Conventional Commit Panel found ${basename(uri)} in this repository. Loading it runs JavaScript from the workspace.`,
 			enable,
 			'Not Now',
 		);
 
 		if (choice === enable) {
 			await vscode.workspace
-				.getConfiguration('commitizen')
+				.getConfiguration('conventionalCommitPanel')
 				.update('config.allowJsConfig', true, vscode.ConfigurationTarget.Workspace);
 		}
 	}

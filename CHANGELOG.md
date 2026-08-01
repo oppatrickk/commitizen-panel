@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the Commitizen Panel extension are documented here.
+All notable changes to the Conventional Commit Panel extension are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -13,7 +13,7 @@ First release.
 
 ### Added
 
-- **Commitizen panel in the Source Control view.** A webview section under `CHANGES` for composing
+- **Commit panel in the Source Control view.** A webview section under `CHANGES` for composing
   Conventional Commit messages, with every field editable in any order rather than a one-shot wizard.
 - **Type grid** with emoji badges and short descriptions, plus a **custom card you type directly
   into** for types outside the configured list.
@@ -36,7 +36,7 @@ First release.
 ### Security
 
 - JavaScript commit configs (`.cz-config.js`, `commitlint.config.js`) are **not** executed unless
-  `commitizen.config.allowJsConfig` is enabled, are skipped entirely in untrusted workspaces, and
+  `conventionalCommitPanel.config.allowJsConfig` is enabled, are skipped entirely in untrusted workspaces, and
   run in a short-lived child process rather than the extension host. JSON and YAML configs are
   parsed, never executed.
 - The webview runs under a strict CSP with a per-load nonce, no inline script and no remote
@@ -48,5 +48,5 @@ First release.
   text you typed there by hand.
 - The panel does not duplicate the file lists; VS Code's own `Changes` section already does that.
 
-[Unreleased]: https://github.com/oppatrickk/commitizen-panel/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/oppatrickk/commitizen-panel/releases/tag/v0.1.0
+[Unreleased]: https://github.com/oppatrickk/conventional-commit-panel/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/oppatrickk/conventional-commit-panel/releases/tag/v0.1.0

@@ -8,7 +8,7 @@ const STATE_CHANGE_DEBOUNCE_MS = 200;
  *
  * Owns three things the rest of the extension should not have to think about:
  * which repository is "active" in a multi-root workspace, debouncing the very
- * chatty `state.onDidChange` event, and keeping the `commitizen.hasRepository`
+ * chatty `state.onDidChange` event, and keeping the `conventionalCommitPanel.hasRepository`
  * context key in sync so the panel can hide itself outside Git workspaces.
  */
 export class GitService implements vscode.Disposable {
@@ -267,7 +267,7 @@ export class GitService implements vscode.Disposable {
 	}
 
 	private updateContextKey(): Thenable<unknown> {
-		return vscode.commands.executeCommand('setContext', 'commitizen.hasRepository', this.hasRepository);
+		return vscode.commands.executeCommand('setContext', 'conventionalCommitPanel.hasRepository', this.hasRepository);
 	}
 
 	private disposeRepoSubscriptions(): void {

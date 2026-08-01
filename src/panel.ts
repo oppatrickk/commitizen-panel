@@ -65,7 +65,7 @@ type InboundMessage =
  * `Changes` section sits directly below and already does that job.
  */
 export class ComposerViewProvider implements vscode.WebviewViewProvider, vscode.Disposable {
-	public static readonly viewType = 'commitizen.composer';
+	public static readonly viewType = 'conventionalCommitPanel.composer';
 
 	private view: vscode.WebviewView | undefined;
 	private readonly disposables: vscode.Disposable[] = [];
@@ -356,7 +356,7 @@ export class ComposerViewProvider implements vscode.WebviewViewProvider, vscode.
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link href="${codiconUri}" rel="stylesheet">
 	<link href="${styleUri}" rel="stylesheet">
-	<title>Commitizen</title>
+	<title>Conventional Commit Panel</title>
 </head>
 <body>
 	<div id="empty" class="empty" hidden>Open a Git repository to compose a commit message.</div>

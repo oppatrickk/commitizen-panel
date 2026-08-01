@@ -299,7 +299,7 @@ export function parseCzrc(raw: unknown): { adapter?: string; czCustomizablePath?
 	return result;
 }
 
-/** Builds a config from the `commitizen.types` VS Code setting. */
+/** Builds a config from the `conventionalCommitPanel.types` VS Code setting. */
 export function parseSettingsTypes(raw: unknown): CommitConfig | undefined {
 	const types = normalizeTypes(raw);
 	if (types.length === 0) {
@@ -328,7 +328,7 @@ export function resolveConfig(candidates: Array<CommitConfig | undefined>): Comm
 	return BUILT_IN_CONFIG;
 }
 
-/** Looks up the emoji for a type, used when `commitizen.useEmoji` is on. */
+/** Looks up the emoji for a type, used when `conventionalCommitPanel.useEmoji` is on. */
 export function emojiForType(config: CommitConfig, type: string | undefined): string | undefined {
 	if (!type) {
 		return undefined;
