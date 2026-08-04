@@ -7,6 +7,32 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-04
+
+### Added
+
+- A commit type is pre-selected on a fresh draft, `feat` by default. Set
+  `conventionalCommitPanel.defaultType` to pick a different one, or to an empty string to keep the
+  old behaviour of starting with nothing selected. A default the repository does not offer falls back
+  to the first type it does, so the panel never opens in Custom mode holding a type you did not pick.
+- **Open Composer in Editor**, from the panel toolbar or the command palette. The panel lives in the
+  Source Control view, which gives its sections a fixed share of the sidebar and offers extensions no
+  way to ask for more; the editor tab is the same composer with the whole window to work in. Both
+  stay in sync — edit in either and the other follows.
+- Pushing a branch that has no upstream now offers a **Publish Branch** action instead of failing
+  with `fatal: The current branch has no upstream branch`. It picks `origin` when there is one, asks
+  which remote when there are several and no `origin`, and never contacts a remote until you press
+  the button.
+- A progress indicator while pushing.
+
+### Changed
+
+- The composed message no longer reaches the Source Control input box until it has a subject. A type
+  and a branch-derived scope alone are a prefix, not a commit message, and with a type now
+  pre-selected, writing them out would have meant that merely opening the Source Control view stamped
+  `feat(PROJ-123): ` into a box you had deliberately left empty.
+- The **Commit type** quick pick opens on the current type rather than at the top of the list.
+
 ## [0.1.1] - 2026-08-01
 
 ### Fixed
@@ -70,6 +96,7 @@ First release.
   text you typed there by hand.
 - The panel does not duplicate the file lists; VS Code's own `Changes` section already does that.
 
-[Unreleased]: https://github.com/oppatrickk/conventional-commit-panel/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/oppatrickk/conventional-commit-panel/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/oppatrickk/conventional-commit-panel/releases/tag/v0.2.0
 [0.1.1]: https://github.com/oppatrickk/conventional-commit-panel/releases/tag/v0.1.1
 [0.1.0]: https://github.com/oppatrickk/conventional-commit-panel/releases/tag/v0.1.0
