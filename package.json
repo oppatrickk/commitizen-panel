@@ -2,7 +2,7 @@
   "name": "conventional-commit-panel",
   "displayName": "Conventional Commit Panel",
   "description": "Compose Conventional Commit messages from a persistent panel in the Source Control view.",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "publisher": "patREKT",
   "license": "MIT",
   "icon": "media/icon.png",
