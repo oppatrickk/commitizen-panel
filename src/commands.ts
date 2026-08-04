@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { Composer } from './composer';
+import { ComposerEditor } from './composerEditor';
 import {
 	activeScopeItem,
 	applyScopeChoice,
@@ -21,8 +22,10 @@ const BODY_FILE_NAME = 'COMMIT_EDITMSG';
 export function registerCommands(
 	context: vscode.ExtensionContext,
 	composer: Composer,
+	editor: ComposerEditor,
 ): vscode.Disposable[] {
 	return [
+		vscode.commands.registerCommand('conventionalCommitPanel.openInEditor', () => editor.show()),
 		vscode.commands.registerCommand('conventionalCommitPanel.edit', (key: FieldKey) => editField(context, composer, key)),
 		vscode.commands.registerCommand('conventionalCommitPanel.editBodyInEditor', () => editBodyInEditor(context, composer)),
 		vscode.commands.registerCommand('conventionalCommitPanel.wizard', () => runWizard(composer)),
@@ -62,11 +65,15 @@ async function editField(
 }
 
 async function editType(composer: Composer): Promise<void> {
-	const picked = await vscode.window.showQuickPick(buildTypeItems(composer), {
-		title: 'Commit type',
-		placeHolder: 'Select the kind of change you are committing',
-		matchOnDescription: true,
-	});
+	const items = buildTypeItems(composer);
+	const picked = await showQuickPickWithActive(
+		items,
+		items.find((item) => item.value === composer.draft.type),
+		{
+			title: 'Commit type',
+			placeHolder: 'Select the kind of change you are committing',
+		},
+	);
 
 	if (picked) {
 		composer.setType(picked.value);

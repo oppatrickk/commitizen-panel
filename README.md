@@ -46,6 +46,14 @@ installed, and it doesn't shell out to the commitizen or commitlint CLIs.
 **Guided wizard.** Prefer a linear flow? The toolbar button walks the same fields step by step, with
 a back button. It shares one draft with the panel, so you can switch between them freely.
 
+**Room to work.** The panel sits in the Source Control view, which gives its sections a fixed share
+of the sidebar. When that's tight, **Open Composer in Editor** puts the same composer in a full
+editor tab. Both stay in sync — edit in either and the other follows.
+
+**Publishing a branch.** Pushing a branch that has no upstream offers to publish it instead of
+failing with `fatal: The current branch has no upstream branch`. It uses `origin` when there is one
+and asks when there are several, and nothing reaches a remote until you press the button.
+
 Your draft survives a window reload, and the panel never overwrites text you typed into the Source
 Control box by hand.
 
@@ -58,6 +66,7 @@ Control box by hand.
 | `conventionalCommitPanel.bodyLineLength` | `72` | Wrap column for the body. `0` disables wrapping. |
 | `conventionalCommitPanel.useEmoji` | `false` | Prefix the subject with the type's emoji. |
 | `conventionalCommitPanel.types` | `[]` | Custom type list. Empty means repo config, then the built-in list. |
+| `conventionalCommitPanel.defaultType` | `feat` | Type pre-selected on a fresh draft. Empty string selects nothing. |
 | `conventionalCommitPanel.scope.ticketPattern` | `([A-Z][A-Z0-9]+-\d+)` | Pulls a ticket ID out of the branch name. |
 | `conventionalCommitPanel.scope.branchPrefixes` | `feature, feat, fix, …` | Prefixes stripped before the segment fallback. |
 | `conventionalCommitPanel.scope.ignoreBranches` | `main, master, develop, dev, trunk` | Branches that suggest no scope. |

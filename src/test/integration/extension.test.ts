@@ -27,6 +27,18 @@ async function getApi(): Promise<CommitPanelApi> {
 	return api;
 }
 
+/** Polls until a condition holds, for workbench state that settles a tick later. */
+async function waitFor(condition: () => boolean, timeoutMs = 5000): Promise<boolean> {
+	const deadline = Date.now() + timeoutMs;
+	while (Date.now() < deadline) {
+		if (condition()) {
+			return true;
+		}
+		await new Promise((resolve) => setTimeout(resolve, 50));
+	}
+	return false;
+}
+
 /** The Git extension discovers repositories asynchronously after activation. */
 async function waitForRepository(api: CommitPanelApi, timeoutMs = 20000): Promise<boolean> {
 	const deadline = Date.now() + timeoutMs;
@@ -57,6 +69,7 @@ suite('Conventional Commit Panel', () => {
 			'conventionalCommitPanel.editBodyInEditor',
 			'conventionalCommitPanel.apply',
 			'conventionalCommitPanel.reset',
+			'conventionalCommitPanel.openInEditor',
 		]) {
 			assert.ok(commands.includes(command), `${command} was not registered`);
 		}
@@ -312,7 +325,9 @@ suite('Conventional Commit Panel', () => {
 		});
 
 		test('surfaces the problems the panel renders under the subject', async () => {
-			api.composer.update({ subject: 'no type chosen' });
+			// The type is explicitly cleared: reset() now pre-selects one, so there
+			// would otherwise be no type problem left to assert on.
+			api.composer.update({ subject: 'no type chosen', type: undefined, customTypeActive: undefined });
 			assert.strictEqual(
 				api.composer.problems.some((problem) => problem.field === 'type'),
 				true,
@@ -407,6 +422,148 @@ suite('Conventional Commit Panel', () => {
 				assert.deepStrictEqual(api.composer.problems, []);
 			} finally {
 				await configuration.update('scope.required', previous, vscode.ConfigurationTarget.Global);
+			}
+		});
+
+		test('pre-selects a commit type on a fresh draft', async () => {
+			api.composer.reset();
+			await api.composer.refresh();
+
+			assert.strictEqual(api.composer.draft.type, 'feat');
+			assert.strictEqual(api.composer.isCustomType, false, 'the pre-selection must not land in Custom mode');
+		});
+
+		test('honours conventionalCommitPanel.defaultType', async () => {
+			const configuration = vscode.workspace.getConfiguration('conventionalCommitPanel');
+			const previous = configuration.get<string>('defaultType');
+
+			await configuration.update('defaultType', 'chore', vscode.ConfigurationTarget.Global);
+			try {
+				api.composer.reset();
+				await api.composer.refresh();
+				assert.strictEqual(api.composer.draft.type, 'chore');
+			} finally {
+				await configuration.update('defaultType', previous, vscode.ConfigurationTarget.Global);
+			}
+		});
+
+		test('an empty defaultType pre-selects nothing', async () => {
+			const configuration = vscode.workspace.getConfiguration('conventionalCommitPanel');
+			const previous = configuration.get<string>('defaultType');
+
+			await configuration.update('defaultType', '', vscode.ConfigurationTarget.Global);
+			try {
+				api.composer.reset();
+				await api.composer.refresh();
+				assert.strictEqual(api.composer.draft.type, undefined);
+			} finally {
+				await configuration.update('defaultType', previous, vscode.ConfigurationTarget.Global);
+			}
+		});
+
+		test('a default the repository does not offer falls back to one it does', async () => {
+			const configuration = vscode.workspace.getConfiguration('conventionalCommitPanel');
+			const previousTypes = configuration.get<unknown[]>('types');
+
+			await configuration.update('types', [{ value: 'chore' }], vscode.ConfigurationTarget.Global);
+			try {
+				// Refresh first: a draft is seeded from the config already loaded, so
+				// the new type list has to be in place before the draft is created.
+				await api.composer.refresh();
+				api.composer.reset();
+
+				assert.strictEqual(api.composer.draft.type, 'chore');
+				assert.strictEqual(api.composer.isCustomType, false, 'an off-list default would open Custom mode');
+			} finally {
+				await configuration.update('types', previousTypes, vscode.ConfigurationTarget.Global);
+				await api.composer.refresh();
+			}
+		});
+
+		test('the pre-selection never overrides a choice already made', async () => {
+			api.composer.setType('fix');
+			await api.composer.refresh();
+			assert.strictEqual(api.composer.draft.type, 'fix');
+
+			// Custom mode with nothing typed yet is also a choice, and the seed would
+			// otherwise fill it in on the next debounced refresh.
+			api.composer.activateCustomType();
+			await api.composer.refresh();
+			assert.strictEqual(api.composer.isCustomType, true);
+			assert.strictEqual(api.composer.draft.type, undefined);
+		});
+
+		test('the pre-selected type stays out of the commit box until there is a subject', async () => {
+			api.composer.reset();
+			await api.composer.refresh();
+
+			assert.strictEqual(api.composer.draft.type, 'feat', 'precondition: a type is pre-selected');
+			assert.strictEqual(
+				api.git.getCommitMessage(),
+				'',
+				'opening the view must not stamp a subject-less header into the box',
+			);
+
+			api.composer.update({ scope: '', scopeSource: 'custom', subject: 'add export' });
+			assert.strictEqual(api.git.getCommitMessage(), 'feat: add export');
+
+			// And deleting it again empties the box rather than stranding `feat: `.
+			api.composer.update({ subject: '' });
+			assert.strictEqual(api.git.getCommitMessage(), '');
+			assert.strictEqual(api.composer.isOutOfSync, false);
+		});
+
+		test('refuses to commit a header with no subject', async () => {
+			// canCommit only gates the panel button; this command is reachable from
+			// the palette, and with a type pre-selected the rendered message is never
+			// empty, so the emptiness guard has to be about the subject.
+			api.composer.reset();
+			await api.composer.refresh();
+
+			assert.strictEqual(await api.composer.commit(), false);
+		});
+
+		test('apply leaves the box alone when the draft has no subject', async () => {
+			api.composer.reset();
+			await api.composer.refresh();
+
+			const repository = api.git.activeRepository;
+			assert.ok(repository);
+			repository.inputBox.value = 'hand written message';
+
+			api.composer.applyToInputBox();
+
+			assert.strictEqual(
+				repository.inputBox.value,
+				'hand written message',
+				'apply on a subject-less draft cleared the box',
+			);
+		});
+
+		test('exposes the repository remotes for the publish flow', async () => {
+			assert.ok(Array.isArray(api.git.remotes));
+			for (const remote of api.git.remotes) {
+				assert.strictEqual(typeof remote.name, 'string');
+			}
+		});
+
+		test('opening the composer in an editor tab is idempotent', async () => {
+			const tabsNamed = () =>
+				vscode.window.tabGroups.all
+					.flatMap((group) => group.tabs)
+					.filter((tab) => tab.label.startsWith('Conventional Commit'));
+
+			try {
+				await vscode.commands.executeCommand('conventionalCommitPanel.openInEditor');
+				// The tabs model settles a tick after the panel is created.
+				await waitFor(() => tabsNamed().length > 0);
+				await vscode.commands.executeCommand('conventionalCommitPanel.openInEditor');
+
+				assert.strictEqual(tabsNamed().length, 1, 'the second invocation opened a duplicate tab');
+			} finally {
+				for (const tab of tabsNamed()) {
+					await vscode.window.tabGroups.close(tab);
+				}
 			}
 		});
 

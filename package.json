@@ -85,6 +85,12 @@
         "icon": "$(check)"
       },
       {
+        "command": "conventionalCommitPanel.openInEditor",
+        "title": "Open Composer in Editor",
+        "category": "Conventional Commit",
+        "icon": "$(link-external)"
+      },
+      {
         "command": "conventionalCommitPanel.openSettings",
         "title": "Open Settings",
         "category": "Conventional Commit",
@@ -121,8 +127,30 @@
           "group": "navigation@2"
         },
         {
+          "command": "conventionalCommitPanel.openInEditor",
+          "when": "view == conventionalCommitPanel.composer",
+          "group": "navigation@3"
+        },
+        {
           "command": "conventionalCommitPanel.openSettings",
           "when": "view == conventionalCommitPanel.composer",
+          "group": "navigation@4"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "conventionalCommitPanel.wizard",
+          "when": "activeWebviewPanelId == conventionalCommitPanel.editor",
+          "group": "navigation@1"
+        },
+        {
+          "command": "conventionalCommitPanel.reset",
+          "when": "activeWebviewPanelId == conventionalCommitPanel.editor",
+          "group": "navigation@2"
+        },
+        {
+          "command": "conventionalCommitPanel.openSettings",
+          "when": "activeWebviewPanelId == conventionalCommitPanel.editor",
           "group": "navigation@3"
         }
       ],
@@ -133,6 +161,10 @@
         },
         {
           "command": "conventionalCommitPanel.editBodyInEditor",
+          "when": "conventionalCommitPanel.hasRepository"
+        },
+        {
+          "command": "conventionalCommitPanel.openInEditor",
           "when": "conventionalCommitPanel.hasRepository"
         }
       ]
@@ -226,6 +258,11 @@
           "type": "boolean",
           "default": true,
           "description": "Show a Custom card at the end of the type grid for typing a type that is not on the list. A repository that pins its types with a commitlint type-enum rule will still report a custom type as invalid."
+        },
+        "conventionalCommitPanel.defaultType": {
+          "type": "string",
+          "default": "feat",
+          "markdownDescription": "Commit type pre-selected on a fresh draft. When the repository's own type list does not contain it, the first type on that list is used instead — pre-selecting a type the repository does not offer would open the panel in Custom mode. Set to an empty string to start with nothing selected. The pre-selection is not written into the Source Control input box until you type a subject."
         },
         "conventionalCommitPanel.scope.ignoreBranches": {
           "type": "array",

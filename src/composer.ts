@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { BUILT_IN_CONFIG, CommitConfig } from './config';
+import { BUILT_IN_CONFIG, CommitConfig, resolveDefaultType } from './config';
 import { ConfigService } from './configLoader';
 import { branchScopeCandidates, BranchScopeOptions, DEFAULT_BRANCH_SCOPE_OPTIONS } from './branch';
 import {
@@ -14,6 +14,7 @@ import {
 } from './format';
 import { CommitDraft, DraftStore } from './model';
 import { GitService } from './git';
+import { choosePublishRemote, isNoUpstreamBranch } from './publish';
 
 /**
  * Compares two commit messages for the purpose of "did we write this?".
@@ -119,6 +120,11 @@ export class Composer implements vscode.Disposable {
 		this.git.setCommitMessage('');
 		this.drafts.setLastWritten(key, '');
 		this.outOfSync = false;
+
+		// After the box is cleared, not before: seeding first runs a sync against
+		// the message still sitting in the box and reports the draft out of sync
+		// with text the user just asked to throw away.
+		this.applyDefaultType();
 		void this.refresh();
 	}
 
@@ -138,6 +144,23 @@ export class Composer implements vscode.Disposable {
 
 	renderMessage(): string {
 		return renderCommitMessage(this.draft, this.formatOptions);
+	}
+
+	/**
+	 * The message the panel is willing to put anywhere outside itself.
+	 *
+	 * A header with no subject is not a commit message, it is a prefix. With a type
+	 * pre-selected and {@link applyBranchScope} filling the scope in, letting it
+	 * through would mean that merely opening the Source Control view stamped
+	 * `feat(PROJ-123): ` into a commit box the user had deliberately left empty.
+	 *
+	 * The rule is deliberately about the subject rather than about which type was
+	 * seeded, so it reads as one sentence — the box holds a whole message or
+	 * nothing — and so deleting the subject empties the box again instead of
+	 * stranding a bare prefix there.
+	 */
+	private composedMessage(): string {
+		return (this.draft.subject ?? '').trim() ? this.renderMessage() : '';
 	}
 
 	renderHeaderLine(): string {
@@ -236,7 +259,10 @@ export class Composer implements vscode.Disposable {
 	 * config — are surfaced verbatim, because that text is the actionable part.
 	 */
 	async commit(options?: { all?: boolean; amend?: boolean }): Promise<boolean> {
-		const message = this.renderMessage();
+		// Deliberately the guarded message, not the rendered one: with a type
+		// pre-selected the raw render is never empty, so committing straight from
+		// the command palette would otherwise record a subject-less `feat: `.
+		const message = this.composedMessage();
 		if (!message.trim()) {
 			void vscode.window.showWarningMessage('Conventional Commit Panel: nothing to commit — the message is empty.');
 			return false;
@@ -271,11 +297,90 @@ export class Composer implements vscode.Disposable {
 
 	async push(): Promise<void> {
 		try {
-			await this.git.push();
+			await this.withPushProgress('Pushing…', () => this.git.push());
 		} catch (error) {
+			if (isNoUpstreamBranch(error)) {
+				await this.offerToPublish();
+				return;
+			}
+
 			const detail = error instanceof Error ? error.message : String(error);
 			void vscode.window.showErrorMessage(`Push failed: ${detail}`);
 		}
+	}
+
+	/**
+	 * Offers to set an upstream, and pushes again only if the button is pressed.
+	 *
+	 * Reached by catching the failure rather than by checking `HEAD.upstream` up
+	 * front: that state comes from the Git extension's last `git status` and goes
+	 * stale when someone sets a remote in a terminal, and anyone running with
+	 * `push.autoSetupRemote` has pushes that succeed with no upstream — a pre-check
+	 * would interrupt them for nothing. Nothing has reached the network at this
+	 * point either way; git refuses a push with no refspec locally.
+	 */
+	private async offerToPublish(): Promise<void> {
+		const branch = this.git.branchName;
+		if (!branch) {
+			// Detached or unborn HEAD: there is no branch to publish.
+			void vscode.window.showErrorMessage('Push failed: no branch is checked out.');
+			return;
+		}
+
+		const choice = choosePublishRemote(this.git.remotes);
+
+		if (choice.kind === 'none') {
+			const addRemote = 'Add Remote';
+			const picked = await vscode.window.showWarningMessage(
+				`"${branch}" cannot be published: this repository has no remote.`,
+				addRemote,
+			);
+			if (picked === addRemote) {
+				await vscode.commands.executeCommand('git.addRemote');
+			}
+			return;
+		}
+
+		const publish = 'Publish Branch';
+		const confirmed = await vscode.window.showInformationMessage(
+			`"${branch}" has no upstream branch.`,
+			publish,
+		);
+		if (confirmed !== publish) {
+			return;
+		}
+
+		let remote: string;
+		if (choice.kind === 'remote') {
+			remote = choice.name;
+		} else {
+			const picked = await vscode.window.showQuickPick(choice.names, {
+				title: 'Publish branch',
+				placeHolder: `Which remote should "${branch}" be published to?`,
+			});
+			if (!picked) {
+				return;
+			}
+			remote = picked;
+		}
+
+		try {
+			await this.withPushProgress(`Publishing ${branch} to ${remote}…`, () =>
+				this.git.push({ remote, branch, setUpstream: true }),
+			);
+		} catch (error) {
+			const detail = error instanceof Error ? error.message : String(error);
+			void vscode.window.showErrorMessage(`Publishing "${branch}" failed: ${detail}`);
+		}
+	}
+
+	/**
+	 * Shows push progress in the status bar rather than on the Source Control view,
+	 * because the composer can also be open as an editor tab, where a spinner in
+	 * the sidebar is not necessarily visible.
+	 */
+	private withPushProgress<T>(title: string, task: () => Thenable<T>): Thenable<T> {
+		return vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title }, task);
 	}
 
 	rememberScope(scope: string): void {
@@ -349,9 +454,38 @@ export class Composer implements vscode.Disposable {
 		const root = this.git.activeRepository?.rootUri;
 		this.config = await this.configService.getConfig(root);
 		this.tooling = await this.configService.detectTooling(root);
+		this.applyDefaultType();
 		this.applyBranchScope();
 		this.syncToInputBox();
 		this.onDidChangeEmitter.fire();
+	}
+
+	/**
+	 * Pre-selects a type on a draft that has none.
+	 *
+	 * Only ever fills a gap. A type already chosen — and Custom mode with nothing
+	 * typed into it yet — are both left alone, because this runs on every refresh
+	 * and re-asserting the default would overwrite the user's choice a couple of
+	 * hundred milliseconds after every file save.
+	 */
+	private applyDefaultType(): void {
+		const key = this.repositoryKey;
+		if (!key) {
+			return;
+		}
+
+		const draft = this.drafts.get(key);
+		if (draft.type !== undefined || draft.customTypeActive) {
+			return;
+		}
+
+		const value = resolveDefaultType(
+			this.configService.setting<string>('defaultType', 'feat'),
+			this.config.types,
+		);
+		if (value) {
+			this.drafts.update(key, { type: value });
+		}
 	}
 
 	/**
@@ -400,7 +534,7 @@ export class Composer implements vscode.Disposable {
 			return;
 		}
 
-		const rendered = this.renderMessage();
+		const rendered = this.composedMessage();
 		const current = this.git.getCommitMessage();
 
 		if (isSameMessage(current, rendered)) {
@@ -432,7 +566,13 @@ export class Composer implements vscode.Disposable {
 			return;
 		}
 
-		const rendered = this.renderMessage();
+		const rendered = this.composedMessage();
+		if (!rendered) {
+			// Apply on a draft with no subject would otherwise wipe the box, which
+			// is the one thing an explicit Apply should never do.
+			return;
+		}
+
 		this.git.setCommitMessage(rendered);
 		this.drafts.setLastWritten(key, rendered);
 		this.outOfSync = false;

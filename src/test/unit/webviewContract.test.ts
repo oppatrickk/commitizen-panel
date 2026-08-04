@@ -32,6 +32,12 @@ describe('webview contract', () => {
 
 	const htmlIds = new Set(matchAll(html, /\bid="([^"]+)"/g));
 
+	it('the HTML template still lives in the file this test reads', () => {
+		// Every assertion below scans PANEL_TS as text. If the template moves, they
+		// all quietly find nothing to check rather than reporting the real problem.
+		assert.ok(html.includes('<!DOCTYPE html>'), 'the panel HTML moved out of src/panel.ts — update PANEL_TS');
+	});
+
 	it('panel.js parses', () => {
 		// Nothing else checks this file: esbuild never touches media/, tsc ignores
 		// .js, and eslint is scoped to src/. A syntax error here would ship happily
@@ -110,6 +116,16 @@ describe('webview contract', () => {
 		// The footer must be a sibling of the scrolling area, not inside it, or
 		// Commit scrolls away with everything else.
 		assert.ok(/<\/div>\s*<footer/.test(html), 'the footer is nested inside the scrolling composer');
+	});
+
+	it('the type grid reflows instead of forcing a fixed column count', () => {
+		// The same markup renders in a narrow sidebar section and in a maximised
+		// editor tab. Nothing else can catch a regression to two fixed columns,
+		// which turns the tab into a pair of absurdly wide cards.
+		assert.ok(
+			/\.type-grid\s*\{[^}]*grid-template-columns:\s*repeat\(auto-f/.test(css),
+			'the type grid is pinned to a fixed column count',
+		);
 	});
 
 	it('uses the workbench UI font for chrome and the commit-box font for the message', () => {

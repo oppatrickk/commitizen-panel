@@ -56,18 +56,20 @@ type InboundMessage =
 	| { type: 'reset' };
 
 /**
- * The `CONVENTIONAL COMMIT` section in the Source Control view.
+ * The composer UI, driving one webview.
  *
  * A webview rather than a TreeView: the design needs a type grid, inline text
  * fields, a live preview and a Commit button, none of which a TreeItem can render.
  *
  * Deliberately does not reproduce the file lists — the built-in Source Control
  * `Changes` section sits directly below and already does that job.
+ *
+ * Knows nothing about what its webview is mounted in, so the Source Control view
+ * and the editor tab share one message handler, one state builder and one HTML
+ * template. Both subscribe to the same {@link Composer}, which is what makes an
+ * edit in either surface show up in the other.
  */
-export class ComposerViewProvider implements vscode.WebviewViewProvider, vscode.Disposable {
-	public static readonly viewType = 'conventionalCommitPanel.composer';
-
-	private view: vscode.WebviewView | undefined;
+export class ComposerHost implements vscode.Disposable {
 	private readonly disposables: vscode.Disposable[] = [];
 	/** Set while applying a webview edit, so the echoed state leaves inputs alone. */
 	private applyingWebviewEdit = false;
@@ -75,31 +77,20 @@ export class ComposerViewProvider implements vscode.WebviewViewProvider, vscode.
 	constructor(
 		private readonly extensionUri: vscode.Uri,
 		private readonly composer: Composer,
+		private readonly webview: vscode.Webview,
+		/** Lets each container do what it can with the state, e.g. show the branch. */
+		private readonly onState: (state: PanelState) => void = () => {},
 	) {
-		this.disposables.push(this.composer.onDidChange(() => this.postState()));
-	}
-
-	resolveWebviewView(view: vscode.WebviewView): void {
-		this.view = view;
-
-		view.webview.options = {
+		webview.options = {
 			enableScripts: true,
 			localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, 'media')],
 		};
-		view.webview.html = this.render(view.webview);
+		webview.html = this.render(webview);
 
 		this.disposables.push(
-			view.webview.onDidReceiveMessage((message: InboundMessage) => void this.handle(message)),
-			view.onDidChangeVisibility(() => {
-				if (view.visible) {
-					// Re-checks the commit box as well as re-posting, so a stale
-					// out-of-sync warning clears itself on the way back in.
-					this.composer.recheckSync();
-				}
-			}),
+			webview.onDidReceiveMessage((message: InboundMessage) => void this.handle(message)),
+			this.composer.onDidChange(() => this.postState()),
 		);
-
-		void this.composer.refresh();
 	}
 
 	private async handle(message: InboundMessage): Promise<void> {
@@ -226,13 +217,9 @@ export class ComposerViewProvider implements vscode.WebviewViewProvider, vscode.
 	}
 
 	private postState(): void {
-		if (!this.view) {
-			return;
-		}
-
 		const state = this.buildState();
-		this.view.description = state.branch;
-		void this.view.webview.postMessage({ type: 'state', state });
+		this.onState(state);
+		void this.webview.postMessage({ type: 'state', state });
 	}
 
 	private buildState(): PanelState {
@@ -463,6 +450,56 @@ export class ComposerViewProvider implements vscode.WebviewViewProvider, vscode.
 	}
 
 	dispose(): void {
+		for (const disposable of this.disposables) {
+			disposable.dispose();
+		}
+	}
+}
+
+/**
+ * The `CONVENTIONAL COMMIT` section in the Source Control view.
+ *
+ * Owns only the container concerns — when to re-check sync, where the branch name
+ * goes — and hands the webview itself to a {@link ComposerHost}.
+ */
+export class ComposerViewProvider implements vscode.WebviewViewProvider, vscode.Disposable {
+	public static readonly viewType = 'conventionalCommitPanel.composer';
+
+	private host: ComposerHost | undefined;
+	private readonly disposables: vscode.Disposable[] = [];
+
+	constructor(
+		private readonly extensionUri: vscode.Uri,
+		private readonly composer: Composer,
+	) {}
+
+	resolveWebviewView(view: vscode.WebviewView): void {
+		// A re-resolve replaces the webview, so the old host's subscriptions would
+		// otherwise stack up and post to a webview that no longer exists.
+		this.host?.dispose();
+		this.host = new ComposerHost(this.extensionUri, this.composer, view.webview, (state) => {
+			view.description = state.branch;
+		});
+
+		this.disposables.push(
+			view.onDidChangeVisibility(() => {
+				if (view.visible) {
+					// Re-checks the commit box as well as re-posting, so a stale
+					// out-of-sync warning clears itself on the way back in.
+					this.composer.recheckSync();
+				}
+			}),
+			view.onDidDispose(() => {
+				this.host?.dispose();
+				this.host = undefined;
+			}),
+		);
+
+		void this.composer.refresh();
+	}
+
+	dispose(): void {
+		this.host?.dispose();
 		for (const disposable of this.disposables) {
 			disposable.dispose();
 		}

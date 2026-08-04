@@ -328,6 +328,24 @@ export function resolveConfig(candidates: Array<CommitConfig | undefined>): Comm
 	return BUILT_IN_CONFIG;
 }
 
+/**
+ * The type a fresh draft opens on.
+ *
+ * A configured default that the repository does not offer is silently replaced by
+ * the first type it does offer, rather than used as-is: an off-list type makes
+ * `Composer.isCustomType` true, which would open the panel in Custom mode holding
+ * a type the user never picked. An empty setting is an explicit "start with
+ * nothing selected" and must not fall through to that fallback.
+ */
+export function resolveDefaultType(configured: string | undefined, types: CommitType[]): string | undefined {
+	const wanted = (configured ?? '').trim();
+	if (!wanted) {
+		return undefined;
+	}
+
+	return types.some((type) => type.value === wanted) ? wanted : types[0]?.value;
+}
+
 /** Looks up the emoji for a type, used when `conventionalCommitPanel.useEmoji` is on. */
 export function emojiForType(config: CommitConfig, type: string | undefined): string | undefined {
 	if (!type) {

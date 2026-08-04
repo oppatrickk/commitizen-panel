@@ -65,6 +65,23 @@ body {
 	gap: var(--cz-gap);
 }
 
+/* Only the editor tab is ever this wide — the Source Control section is not, so
+ * the sidebar rendering is untouched. A subject field as wide as the window is
+ * unusable, so the content gets a readable measure and the footer keeps its rule
+ * running edge to edge with its buttons lined up against the fields above. */
+@media (min-width: 640px) {
+	.composer,
+	.footer > * {
+		max-width: 900px;
+		width: 100%;
+		align-self: center;
+	}
+
+	.footer {
+		background: var(--vscode-editorWidget-background, transparent);
+	}
+}
+
 /* --- field scaffolding --------------------------------------------------- */
 
 .field-head {
@@ -99,9 +116,12 @@ body {
 
 /* --- type grid ----------------------------------------------------------- */
 
+/* Reflows to whatever the container can fit rather than a fixed two columns: the
+ * same markup renders in a ~300px sidebar section and in a maximised editor tab,
+ * where two columns would mean a pair of absurdly wide cards. */
 .type-grid {
 	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
 	gap: 6px;
 }
 

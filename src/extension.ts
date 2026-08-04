@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { registerCommands } from './commands';
 import { Composer } from './composer';
+import { ComposerEditor } from './composerEditor';
 import { ConfigService } from './configLoader';
 import { GitService } from './git';
 import { DraftStore } from './model';
@@ -21,6 +22,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Commit
 	const drafts = new DraftStore(context.workspaceState);
 	const composer = new Composer(git, configService, drafts);
 	const provider = new ComposerViewProvider(context.extensionUri, composer);
+	const editor = new ComposerEditor(context.extensionUri, composer);
 
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(ComposerViewProvider.viewType, provider, {
@@ -29,11 +31,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<Commit
 			webviewOptions: { retainContextWhenHidden: true },
 		}),
 		provider,
+		editor,
 		composer,
 		drafts,
 		configService,
 		git,
-		...registerCommands(context, composer),
+		...registerCommands(context, composer, editor),
 	);
 
 	// Populate the panel from whatever repository is already open.

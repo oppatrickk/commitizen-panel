@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import type { API as GitAPI, Change, GitExtension, Repository } from './types/git';
+import type { API as GitAPI, Change, GitExtension, Remote, Repository } from './types/git';
 
 const STATE_CHANGE_DEBOUNCE_MS = 200;
 
@@ -201,11 +201,24 @@ export class GitService implements vscode.Disposable {
 		});
 	}
 
-	async push(): Promise<void> {
+	/** Remotes as git lists them, in git's own order. Used by the publish flow. */
+	get remotes(): readonly Remote[] {
+		return this.active?.state.remotes ?? [];
+	}
+
+	/**
+	 * Pushes, optionally setting the upstream.
+	 *
+	 * An options object rather than the underlying API's three positionals, because
+	 * `setUpstream` is only meaningful alongside both a remote and a branch —
+	 * `push(undefined, undefined, true)` type-checks perfectly and asks git for a
+	 * `--set-upstream` with nothing to set it to.
+	 */
+	async push(options?: { remote?: string; branch?: string; setUpstream?: boolean }): Promise<void> {
 		if (!this.active) {
 			throw new Error('No Git repository is active.');
 		}
-		await this.active.push();
+		await this.active.push(options?.remote, options?.branch, options?.setUpstream);
 	}
 
 	/** Re-resolves which repository the panel should be composing for. */

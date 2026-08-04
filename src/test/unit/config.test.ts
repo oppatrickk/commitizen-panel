@@ -11,6 +11,7 @@ import {
 	parseCzrc,
 	parseSettingsTypes,
 	resolveConfig,
+	resolveDefaultType,
 } from '../../config';
 
 describe('normalizeTypes', () => {
@@ -197,6 +198,29 @@ describe('parseSettingsTypes', () => {
 
 	it('returns nothing for the default empty array', () => {
 		assert.strictEqual(parseSettingsTypes([]), undefined);
+	});
+});
+
+describe('resolveDefaultType', () => {
+	it('uses the configured type when the repository offers it', () => {
+		assert.strictEqual(resolveDefaultType('fix', BUILT_IN_TYPES), 'fix');
+	});
+
+	it('never yields a type the repository does not offer', () => {
+		// An off-list type would make Composer.isCustomType true, opening the panel
+		// in Custom mode holding a type the user never picked.
+		assert.strictEqual(resolveDefaultType('feat', [{ value: 'chore' }]), 'chore');
+		assert.strictEqual(resolveDefaultType('nope', BUILT_IN_TYPES), 'feat');
+	});
+
+	it('treats an empty setting as "select nothing", not as "use the first type"', () => {
+		assert.strictEqual(resolveDefaultType('', BUILT_IN_TYPES), undefined);
+		assert.strictEqual(resolveDefaultType('   ', BUILT_IN_TYPES), undefined);
+		assert.strictEqual(resolveDefaultType(undefined, BUILT_IN_TYPES), undefined);
+	});
+
+	it('yields nothing when there are no types to choose from', () => {
+		assert.strictEqual(resolveDefaultType('feat', []), undefined);
 	});
 });
 
