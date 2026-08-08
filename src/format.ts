@@ -17,8 +17,22 @@ export interface FormatOptions {
 	emoji?: string;
 }
 
+/**
+ * Two different numbers that happen to look like one convention.
+ *
+ * The body wraps at 72 for the classic reason: `git log` indents the message by
+ * four spaces, so 72 still fits an 80-column terminal, and git was built around
+ * patches mailed around, where quoting adds two characters per reply level.
+ *
+ * The header is 100 because exceeding it is an *error* here, and an error blocks
+ * the Commit button. `@commitlint/config-conventional` and the Angular guidelines
+ * both put `header-max-length` at 100, so a stricter default meant the panel
+ * refusing to commit headers the repository's own linter would have passed. The
+ * type and scope spend that budget too — `feat(composer): ` is already 16
+ * characters — which the 72 of the subject-only convention never accounted for.
+ */
 export const DEFAULT_FORMAT_OPTIONS: FormatOptions = {
-	headerMaxLength: 72,
+	headerMaxLength: 100,
 	bodyLineLength: 72,
 };
 

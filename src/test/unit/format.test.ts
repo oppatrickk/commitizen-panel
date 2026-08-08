@@ -352,9 +352,22 @@ describe('validateDraft', () => {
 	});
 
 	it('reports an over-long header', () => {
+		// The limit is read from FormatOptions, not from the headerMaxLength on
+		// ValidationRules, so the threshold is set here rather than left to whatever
+		// the default happens to be.
+		const options = { ...DEFAULT_FORMAT_OPTIONS, headerMaxLength: 72 };
 		const draft = { ...valid, subject: 'x'.repeat(80) };
-		const problems = validateDraft(draft, DEFAULT_FORMAT_OPTIONS, rules);
+		const problems = validateDraft(draft, options, rules);
 		assert.strictEqual(problems[0].severity, 'error');
+	});
+
+	it('allows by default the header length commitlint allows', () => {
+		// Going over is an error, and an error blocks the Commit button, so a default
+		// stricter than commitlint's 100 would refuse commits the repository's own
+		// linter accepts.
+		const draft = { ...valid, subject: 'x'.repeat(90) };
+		assert.strictEqual(renderHeader(draft, DEFAULT_FORMAT_OPTIONS).length, 96);
+		assert.deepStrictEqual(validateDraft(draft, DEFAULT_FORMAT_OPTIONS, rules), []);
 	});
 
 	it('warns about a breaking change with no description', () => {

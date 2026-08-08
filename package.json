@@ -179,9 +179,9 @@
         },
         "conventionalCommitPanel.headerMaxLength": {
           "type": "number",
-          "default": 72,
+          "default": 100,
           "minimum": 20,
-          "description": "Maximum length of the commit header (type, scope and subject). Overridden by a commitlint 'header-max-length' rule when one is found."
+          "markdownDescription": "Maximum length of the commit header (type, scope and subject). Going over it is an error, which blocks the Commit button, so this matches the `header-max-length` of 100 used by `@commitlint/config-conventional` and the Angular guidelines. Set it to 72 for the stricter convention that keeps the header on one line in `git log`. A commitlint `header-max-length` rule found in the repository wins over this."
         },
         "conventionalCommitPanel.bodyLineLength": {
           "type": "number",

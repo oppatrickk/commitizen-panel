@@ -134,7 +134,7 @@ export class ConfigService implements vscode.Disposable {
 		const options: FormatOptions = {
 			// A commitlint/cz config in the repo is more authoritative than the
 			// user's global preference, so it wins when present.
-			headerMaxLength: config.headerMaxLength ?? this.setting<number>('headerMaxLength', 72),
+			headerMaxLength: config.headerMaxLength ?? this.setting<number>('headerMaxLength', 100),
 			bodyLineLength: this.setting<number>('bodyLineLength', 72),
 		};
 

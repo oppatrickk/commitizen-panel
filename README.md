@@ -62,7 +62,7 @@ Control box by hand.
 | Setting | Default | Description |
 | --- | --- | --- |
 | `conventionalCommitPanel.liveSync` | `true` | Mirror the draft into the commit box as you edit. |
-| `conventionalCommitPanel.headerMaxLength` | `72` | Header limit. A commitlint `header-max-length` rule wins over this. |
+| `conventionalCommitPanel.headerMaxLength` | `100` | Header limit, matching commitlint's default. Set `72` for the stricter git convention. A commitlint `header-max-length` rule wins over this. |
 | `conventionalCommitPanel.bodyLineLength` | `72` | Wrap column for the body. `0` disables wrapping. |
 | `conventionalCommitPanel.useEmoji` | `false` | Prefix the subject with the type's emoji. |
 | `conventionalCommitPanel.types` | `[]` | Custom type list. Empty means repo config, then the built-in list. |
