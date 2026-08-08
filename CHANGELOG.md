@@ -7,6 +7,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-08
+
+### Changed
+
+- `conventionalCommitPanel.headerMaxLength` now defaults to **100** rather than 72, matching the
+  `header-max-length` used by `@commitlint/config-conventional` and the Angular guidelines. Going
+  over the limit is an error, and an error blocks the Commit button, so the old default meant the
+  panel refused to commit headers a repository's own linter would have passed. Set it back to 72 for
+  the stricter convention that keeps the header on one line in `git log`. The body still wraps at 72,
+  which is where that number actually comes from.
+
 ## [0.2.0] - 2026-08-04
 
 ### Added
@@ -96,7 +107,8 @@ First release.
   text you typed there by hand.
 - The panel does not duplicate the file lists; VS Code's own `Changes` section already does that.
 
-[Unreleased]: https://github.com/oppatrickk/conventional-commit-panel/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/oppatrickk/conventional-commit-panel/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/oppatrickk/conventional-commit-panel/releases/tag/v0.3.0
 [0.2.0]: https://github.com/oppatrickk/conventional-commit-panel/releases/tag/v0.2.0
 [0.1.1]: https://github.com/oppatrickk/conventional-commit-panel/releases/tag/v0.1.1
 [0.1.0]: https://github.com/oppatrickk/conventional-commit-panel/releases/tag/v0.1.0
